@@ -1,6 +1,6 @@
 # grbl_port_opencm3
 
-Scope
+# Scope
 
 The first idea of this project was to port the GRBL code to the Nucleo F401RE board, that is a quite cheap microcontroller (~10/15 $), but also quite performing (72MHz 32-bit CPU and many other features).
 In order to achieve this scope, I chose to use libopencm3 as a base library, concentrating the effort on the development/porting of the application while having a light driver access substrate. 
@@ -9,14 +9,14 @@ I used the GRBL version 0.9 as a code base, and then solved some issues to repro
 Since the libopencm3 are structured to support many microcontrollers, this porting may be achieved with some effort on other popular microcontrollers. 
 And this is what I wish to get in the future with the collaboration of the community.
 
-License
+# License
 
 Being a work derived from the GNU GPLv3 licensed GRBL project, this project uses the same license. 
 The authors and owners of every file are mentioned in the header of the file itself.
 Please refer to GRBL repository for more information about the authors and owners of GRBL project.
 Please refer to libopencm3 repository for more information about the authors and owners of libopencm3 project.
 
-How to compile?
+# How to compile?
 
 At the moment this repository has a structure similar to the libopencm3 examples repository, so to compile you may refer to the libopencm3 repository's build instructions.
 
@@ -36,7 +36,7 @@ make bin all
 , to compile the project and generate the binaries. To clean use the command:
 make clean
 
-How to install?
+# How to install?
 
 For the Nucleo F401RE, if you have the drivers installed, the board should be seen as a mass storage device.
 In this case, copy the binary obtained from the compilation into the mass storage and the on board firmware will take care of the rest.
