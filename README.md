@@ -1,4 +1,5 @@
-# grbl_port_opencm3
+# GRBL port using opencm3 libraries
+[![Gitter channel](https://badges.gitter.im/libopencm3/discuss.svg)](https://gitter.im/grbl_port_opencm3/Lobby)
 
 # Scope
 
