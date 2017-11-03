@@ -20,8 +20,8 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef gcode_h
-#define gcode_h
+#ifndef GCODE_H
+#define GCODE_H
 
 
 // Define modal group internal numbers for checking multiple command violations and tracking the 
@@ -210,4 +210,4 @@ uint8_t gc_execute_line(char *line);
 // Set g-code parser position. Input in steps.
 void gc_sync_position(void);
 
-#endif
+#endif /* GCODE_H */

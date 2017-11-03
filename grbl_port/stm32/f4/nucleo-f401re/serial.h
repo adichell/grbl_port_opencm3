@@ -20,8 +20,8 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef serial_h
-#define serial_h
+#ifndef SERIAL_H
+#define SERIAL_H
 
 
 #ifndef RX_BUFFER_SIZE
@@ -67,4 +67,4 @@ uint8_t serial_get_tx_buffer_count(void);
 void serial_rx_dma_init(void);
 #endif
 
-#endif
+#endif /* SERIAL_H */

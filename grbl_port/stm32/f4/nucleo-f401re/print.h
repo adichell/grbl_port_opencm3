@@ -20,8 +20,8 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef print_h
-#define print_h
+#ifndef PRINT_H
+#define PRINT_H
 
 
 void printString(const char *s);
@@ -56,4 +56,4 @@ void printFloat_SettingValue(float n);
 // Debug tool to print free memory in bytes at the called point. Not used otherwise.
 void printFreeMemory(void);
 
-#endif
+#endif /* PRINT_H */

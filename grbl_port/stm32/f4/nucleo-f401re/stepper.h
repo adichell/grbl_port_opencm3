@@ -20,8 +20,8 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef stepper_h
-#define stepper_h 
+#ifndef STEPPER_H
+#define STEPPER_H
 
 #ifndef SEGMENT_BUFFER_SIZE
   #define SEGMENT_BUFFER_SIZE 6
@@ -55,4 +55,4 @@ void st_update_plan_block_parameters(void);
 float st_get_realtime_rate(void);
 #endif
 
-#endif
+#endif /* STEPPER_H */

@@ -20,8 +20,8 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef nuts_bolts_h
-#define nuts_bolts_h
+#ifndef NUTS_BOLTS_H
+#define NUTS_BOLTS_H
 
 #define false 0
 #define true 1
@@ -90,4 +90,4 @@ void delay_us(uint32_t us);
 // Computes hypotenuse, avoiding avr-gcc's bloated version and the extra error checking.
 float hypot_f(float x, float y);
 
-#endif
+#endif /* NUTS_BOLTS_H */

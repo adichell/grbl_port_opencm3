@@ -26,8 +26,8 @@
 
 // NOTE: With new processors, only add the define name and filename to use.
 
-#ifndef cpu_map_h
-#define cpu_map_h
+#ifndef CPU_MAP_H
+#define CPU_MAP_H
 
 
 #ifdef CPU_MAP_ATMEGA328P // (Arduino Uno) Officially supported by Grbl.
@@ -49,4 +49,4 @@
 #endif
 */
 
-#endif
+#endif /* CPU_MAP_H */

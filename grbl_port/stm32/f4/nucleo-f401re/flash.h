@@ -21,9 +21,6 @@
 #ifndef FLASH_H
 #define FLASH_H
 
-#define MAIN_SECTOR 6
-#define COPY_SECTOR 7
-
 unsigned char flash_get_char( unsigned int addr );
 void flash_put_char( unsigned int addr, unsigned char new_value);
 unsigned int flash_verify_erase_need(char * destination, char *source, unsigned int size);
@@ -36,4 +33,4 @@ void copy_from_main_to_copy(uint32_t start_address_offset, uint32_t end_address_
 void restore_main_sector(void);
 void restore_default_sector_status(void);
 
-#endif //FLASH_H
+#endif /* FLASH_H */

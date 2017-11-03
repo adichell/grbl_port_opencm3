@@ -20,8 +20,8 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef planner_h
-#define planner_h
+#ifndef PLANNER_H
+#define PLANNER_H
 
 
 // The number of linear motions that can be in the plan at any give time
@@ -100,4 +100,4 @@ uint8_t plan_get_block_buffer_count(void);
 // Returns the status of the block ring buffer. True, if buffer is full.
 uint8_t plan_check_full_buffer(void);
 
-#endif
+#endif /* PLANNER_H */

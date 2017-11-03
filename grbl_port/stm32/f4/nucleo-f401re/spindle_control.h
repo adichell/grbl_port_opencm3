@@ -20,8 +20,8 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */ 
 
-#ifndef spindle_control_h
-#define spindle_control_h 
+#ifndef SPINDLE_CONTROL_H
+#define SPINDLE_CONTROL_H
 
 
 // Initializes spindle pins and hardware PWM, if enabled.
@@ -35,4 +35,4 @@ void spindle_set_state(uint8_t state, float rpm);
 // Kills spindle.
 void spindle_stop(void);
 
-#endif
+#endif /* SPINDLE_CONTROL_H */

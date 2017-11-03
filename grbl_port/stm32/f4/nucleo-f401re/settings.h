@@ -20,14 +20,17 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef settings_h
-#define settings_h
+#ifndef SETTINGS_H
+#define SETTINGS_H
 
-#include "grbl.h"
-
+#ifdef NUCLEO_F401
+#include "flash.h"
+#else
+#include "eeprom.h"
+#endif
 
 // Version of the EEPROM data. Will be used to migrate existing data from older versions of Grbl
-// when firmware is upgraded. Always stored in byte 0 of eeprom
+// when firmware is upgraded. Always stored in byte 0 of eeprom or flash dedicated sector.
 #define SETTINGS_VERSION 9  // NOTE: Check settings_reset() when moving to next version.
 
 // Define bit flag masks for the boolean settings in settings.flag.
@@ -54,7 +57,6 @@
 #define SETTINGS_RESTORE_STARTUP_LINES bit(2)
 #define SETTINGS_RESTORE_BUILD_INFO bit(3)
 
-//TODO: move these in another point
 #ifdef NUCLEO_F401
 typedef enum main_sectore_restore_states_e
 {
@@ -70,8 +72,7 @@ typedef enum main_sectore_restore_states_e
 #define EFLASH_ADDR_STARTUP_BLOCK_OFFSET  768U
 #define EFLASH_ADDR_BUILD_INFO_OFFSET     942U
 #define EFLASH_ERASE_AND_RESTORE_OFFSET   1024U
-#define EFLASH_MAIN_BASE_ADDRESS          0x08040000U
-#define EFLASH_COPY_BASE_ADDRESS          0x08060000U
+
 #define EFLASH_ADDR_VERSION_MAIN          (EFLASH_MAIN_BASE_ADDRESS + EFLASH_ADDR_VERSION_OFFSET)
 #define EFLASH_ADDR_GLOBAL_MAIN           (EFLASH_MAIN_BASE_ADDRESS + EFLASH_ADDR_GLOBAL_OFFSET)
 #define EFLASH_ADDR_PARAMETERS_MAIN       (EFLASH_MAIN_BASE_ADDRESS + EFLASH_ADDR_PARAMETERS_OFFSET)
@@ -170,4 +171,4 @@ uint16_t get_direction_pin_mask(uint8_t i);
 uint16_t get_limit_pin_mask(uint8_t i);
 
 
-#endif
+#endif /* SETTINGS_H */

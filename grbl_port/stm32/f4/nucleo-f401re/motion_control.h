@@ -20,8 +20,8 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef motion_control_h
-#define motion_control_h
+#ifndef MOTION_CONTROL_H
+#define MOTION_CONTROL_H
 
 
 #define HOMING_CYCLE_LINE_NUMBER -1
@@ -65,4 +65,4 @@ void mc_probe_cycle(float *target, float feed_rate, uint8_t invert_feed_rate, ui
 // Performs system reset. If in motion state, kills all motion and sets system alarm.
 void mc_reset(void);
 
-#endif
+#endif /* MOTION_CONTROL_H */

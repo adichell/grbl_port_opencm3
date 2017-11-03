@@ -26,8 +26,8 @@
 
 // IMPORTANT: Any changes here requires a full re-compiling of the source code to propagate them.
 
-#ifndef config_h
-#define config_h
+#ifndef CONFIG_H
+#define CONFIG_H
 //#include "grbl.h" // For Arduino IDE compatibility.
 
 
@@ -412,4 +412,4 @@
 // ---------------------------------------------------------------------------------------
 
 
-#endif
+#endif /* CONFIG_H */

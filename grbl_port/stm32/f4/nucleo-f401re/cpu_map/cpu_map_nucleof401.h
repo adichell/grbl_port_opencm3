@@ -1,21 +1,21 @@
 /*
-  cpu_map_nucleof401.h - CPU and pin mapping configuration file
-  Part of Grbl
+  cpu_map_nucleof401.h - CPU and pin mapping configuration file for NUCLEO F401 board.
+  Part of grbl_port_opencm3 project.
 
-  Copyright (c) 2012-2015 Sungeun K. Jeon
+  Copyright (c) 2017 Angelo Di Chello
 
-  Grbl is free software: you can redistribute it and/or modify
+  Grbl_port_opencm3 is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Grbl is distributed in the hope that it will be useful,
+  Grbl_port_opencm3 is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+  along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /* This cpu_map file serves as a central pin mapping settings file for ST Nucleo F401 */
@@ -43,6 +43,12 @@
 //#define TEST_NUCLEO_EXTI_PINS
 
 #define GRBL_PLATFORM "NucleoF401"
+
+
+#define MAIN_SECTOR 6
+#define COPY_SECTOR 7
+#define EFLASH_MAIN_BASE_ADDRESS          0x08040000U
+#define EFLASH_COPY_BASE_ADDRESS          0x08060000U
 
 // Serial port pins
 // #define SERIAL_RX USART0_RX_vect

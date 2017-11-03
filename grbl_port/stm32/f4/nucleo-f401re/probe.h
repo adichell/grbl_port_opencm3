@@ -19,8 +19,8 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
   
-#ifndef probe_h
-#define probe_h 
+#ifndef PROBE_H
+#define PROBE_H
 
 // Values that define the probing state machine.  
 #define PROBE_OFF     0 // Probing disabled or not in use. (Must be zero.)
@@ -41,4 +41,4 @@ uint8_t probe_get_state(void);
 // stepper ISR per ISR tick.
 void probe_state_monitor(void);
 
-#endif
+#endif /* PROBE_H */

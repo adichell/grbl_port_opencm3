@@ -19,8 +19,8 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef system_h
-#define system_h
+#ifndef SYSTEM_H
+#define SYSTEM_H
 
 #include "grbl.h"
 
@@ -111,4 +111,4 @@ void system_convert_array_steps_to_mpos(float *position, int32_t *steps);
   int32_t system_convert_corexy_to_y_axis_steps(int32_t *steps);
 #endif
 
-#endif
+#endif /* SYSTEM_H */

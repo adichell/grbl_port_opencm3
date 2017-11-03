@@ -18,8 +18,8 @@
   You should have received a copy of the GNU General Public License
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef report_h
-#define report_h
+#ifndef REPORT_H
+#define REPORT_H
 
 // Define Grbl status codes.
 #define STATUS_OK 0
@@ -111,4 +111,4 @@ void report_startup_line(uint8_t n, char *line);
 // Prints build info and user info
 void report_build_info(char *line);
 
-#endif
+#endif /* REPORT_H */

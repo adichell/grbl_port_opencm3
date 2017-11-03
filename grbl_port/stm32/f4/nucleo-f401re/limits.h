@@ -20,8 +20,8 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef limits_h
-#define limits_h 
+#ifndef LIMITS_H
+#define LIMITS_H
 
 
 // Initialize the limits module
@@ -39,4 +39,4 @@ void limits_go_home(uint8_t cycle_mask);
 // Check for soft limit violations
 void limits_soft_check(float *target);
 
-#endif
+#endif /* LIMITS_H */
