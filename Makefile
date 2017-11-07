@@ -40,6 +40,7 @@ GRBL_PORT_RULES = elf
 
 all: build
 
+grbl: GRBL_PORT_RULES += bin
 bin: GRBL_PORT_RULES += bin
 hex: GRBL_PORT_RULES += hex
 srec: GRBL_PORT_RULES += srec
@@ -75,12 +76,20 @@ $(GRBL_PORT_DIRS): lib
 grbl_port: $(GRBL_PORT_DIRS)
 	$(Q)true
 
+# Compile executables only, and assumes lib have been compiled
+grbl:  
+	@printf "  BUILD   $(GRBL_PORT_DIRS)\n";
+	$(Q)$(MAKE) --directory=$(GRBL_PORT_DIRS) OPENCM3_DIR=$(OPENCM3_DIR) $(GRBL_PORT_RULES)
+
 clean: $(GRBL_PORT_DIRS:=.clean) styleclean
 	$(Q)$(MAKE) -C libopencm3 clean
 
 stylecheck: $(GRBL_PORT_DIRS:=.stylecheck)
 styleclean: $(GRBL_PORT_DIRS:=.styleclean)
 
+# Clean executables directories only
+clean_grbl: $(GRBL_PORT_DIRS:=.clean) 
+	$(Q)true
 
 %.clean:
 	$(Q)if [ -d $* ]; then \
@@ -95,6 +104,6 @@ styleclean: $(GRBL_PORT_DIRS:=.styleclean)
 	$(Q)$(MAKE) -C $* stylecheck OPENCM3_DIR=$(OPENCM3_DIR)
 
 
-.PHONY: build lib grbl_port $(GRBL_PORT_DIRS) install clean stylecheck styleclean \
+.PHONY: build lib grbl_port grbl clean_grbl install clean stylecheck styleclean \
         bin hex srec list images
 
