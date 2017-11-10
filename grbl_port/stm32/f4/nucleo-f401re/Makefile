@@ -17,15 +17,62 @@
 ## along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-BINARY = main
+
+###############################################################################
+# Source files
+
+OBJ_DIR ?= ./build_dir/
+SRC_DIR ?= ./
+BINARY = $(OBJ_DIR)main
+
+SRCS := reset_vector.c \
+        nuts_bolts.c \
+        report.c \
+        stepper.c \
+        settings.c \
+        serial.c \
+        system.c \
+        print.c \
+        limits.c \
+        flash.c \
+        gcode.c \
+        motion_control.c \
+        protocol.c \
+        planner.c \
+        probe.c \
+        coolant_control.c spindle_control.c
 
 LDSCRIPT = ./nucleo-f401re_ramcode.ld
 
-CPPFLAGS += -I.  -I./cpu_map -I./defaults
+OBJS := $(SRCS:%.c=$(OBJ_DIR)%.o)
 
-OBJS		+= reset_vector.o nuts_bolts.o report.o stepper.o settings.o serial.o system.o print.o limits.o flash.o gcode.o motion_control.o protocol.o planner.o probe.o coolant_control.o spindle_control.o
+###############################################################################
+# C & C++ preprocessor common flags
+CPPFLAGS    += -I.  -I./cpu_map -I./defaults
 
-include ../Makefile.include
-
+###############################################################################
+# Used libraries
 LDLIBS += -lm 
+
+clean : clean_obj
+
+include ../Makefile.include	
+
+$(BINARY).elf $(BINARY)%.map: $(OBJS) $(LDSCRIPT) $(LIB_DIR)/lib$(LIBNAME).a
+	@#printf "  LD      $(*).elf\n"
+	$(Q)$(LD) $(LDFLAGS) $(ARCH_FLAGS) $(OBJS) $(LDLIBS) -o $(BINARY).elf
+
+$(OBJ_DIR):
+	mkdir -p $@
+
+$(OBJ_DIR)%.o: $(SRC_DIR)%.c $(OBJ_DIR)
+	@#printf "  CC      $(*).c\n"
+	$(Q)$(CC) $(CFLAGS) $(CPPFLAGS) $(ARCH_FLAGS) -o $(OBJ_DIR)$(*).o -c $(*).c
+	
+clean_obj:
+	@#printf "  CLEAN\n"
+	$(Q)$(RM) $(OBJ_DIR)*.o $(OBJ_DIR)*.d $(OBJ_DIR)*.elf \
+			$(OBJ_DIR)*.bin $(OBJ_DIR)*.hex $(OBJ_DIR)*.list $(OBJ_DIR)*.map
+
+.PHONY: clean_obj
 

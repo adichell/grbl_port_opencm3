@@ -73,13 +73,15 @@ $(GRBL_PORT_DIRS): lib
 	@printf "  BUILD   $@\n";
 	$(Q)$(MAKE) --directory=$@ OPENCM3_DIR=$(OPENCM3_DIR) $(GRBL_PORT_RULES)
 	
-grbl_port: $(GRBL_PORT_DIRS)
+grbl_port: $(GRBL_PORT_DIRS) 
 	$(Q)true
 
 # Compile executables only, and assumes lib have been compiled
-grbl:  
-	@printf "  BUILD   $(GRBL_PORT_DIRS)\n";
-	$(Q)$(MAKE) --directory=$(GRBL_PORT_DIRS) OPENCM3_DIR=$(OPENCM3_DIR) $(GRBL_PORT_RULES)
+grbl:
+	$(foreach x,$(GRBL_PORT_DIRS), \
+	@printf "  BUILD   $(x)\n"; \
+	$(Q)$(MAKE) --directory=$(x) OPENCM3_DIR=$(OPENCM3_DIR) $(GRBL_PORT_RULES);	)
+	
 
 clean: $(GRBL_PORT_DIRS:=.clean) styleclean
 	$(Q)$(MAKE) -C libopencm3 clean
