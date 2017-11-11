@@ -80,7 +80,7 @@ grbl_port: $(GRBL_PORT_DIRS)
 grbl:
 	$(foreach x,$(GRBL_PORT_DIRS), \
 	@printf "  BUILD   $(x)\n"; \
-	$(Q)$(MAKE) --directory=$(x) OPENCM3_DIR=$(OPENCM3_DIR) $(GRBL_PORT_RULES);	)
+	$(MAKE) --directory=$(x) OPENCM3_DIR=$(OPENCM3_DIR) $(GRBL_PORT_RULES);	)
 	
 
 clean: $(GRBL_PORT_DIRS:=.clean) styleclean

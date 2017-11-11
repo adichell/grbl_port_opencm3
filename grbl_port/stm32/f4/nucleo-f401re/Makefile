@@ -23,7 +23,7 @@
 
 OBJ_DIR ?= ./build_dir/
 SRC_DIR ?= ./
-BINARY = $(OBJ_DIR)main
+MKDIR_P = mkdir -p
 
 SRCS := reset_vector.c \
         nuts_bolts.c \
@@ -45,6 +45,7 @@ SRCS := reset_vector.c \
 LDSCRIPT = ./nucleo-f401re_ramcode.ld
 
 OBJS := $(SRCS:%.c=$(OBJ_DIR)%.o)
+BINARY = $(OBJ_DIR)main
 
 ###############################################################################
 # C & C++ preprocessor common flags
@@ -63,9 +64,9 @@ $(BINARY).elf $(BINARY)%.map: $(OBJS) $(LDSCRIPT) $(LIB_DIR)/lib$(LIBNAME).a
 	$(Q)$(LD) $(LDFLAGS) $(ARCH_FLAGS) $(OBJS) $(LDLIBS) -o $(BINARY).elf
 
 $(OBJ_DIR):
-	mkdir -p $@
+	$(Q)$(MKDIR_P) $@
 
-$(OBJ_DIR)%.o: $(SRC_DIR)%.c $(OBJ_DIR)
+$(OBJ_DIR)%.o: %.c | $(OBJ_DIR)
 	@#printf "  CC      $(*).c\n"
 	$(Q)$(CC) $(CFLAGS) $(CPPFLAGS) $(ARCH_FLAGS) -o $(OBJ_DIR)$(*).o -c $(*).c
 	
