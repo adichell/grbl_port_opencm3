@@ -21,4 +21,7 @@ install:
   - export PATH=$PATH:$GCC_DIR/bin	
   
 script:
+  - make V=1
+  - clean V=1
   - make
+  - clean
