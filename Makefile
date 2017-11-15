@@ -78,8 +78,8 @@ grbl_port: $(GRBL_PORT_DIRS)
 
 # Compile executables only, and assumes lib have been compiled
 grbl:
-	$(foreach x,$(GRBL_PORT_DIRS), \
-	@printf "  BUILD   $(x)\n"; \
+	$(Q)$(foreach x,$(GRBL_PORT_DIRS), \
+	printf "  BUILD   $(x)\n"; \
 	$(MAKE) --directory=$(x) OPENCM3_DIR=$(OPENCM3_DIR) $(GRBL_PORT_RULES);	)
 	
 

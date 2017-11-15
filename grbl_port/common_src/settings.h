@@ -25,7 +25,7 @@
 
 #ifdef NUCLEO_F401
 #include "flash.h"
-#else
+#elif defined(CPU_MAP_ATMEGA328P) || defined(CPU_MAP_ATMEGA2560)
 #include "eeprom.h"
 #endif
 

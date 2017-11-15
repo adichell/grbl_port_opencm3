@@ -23,33 +23,37 @@
 
 OBJ_DIR ?= ./build_dir/
 SRC_DIR ?= ./
+COMMON_SRC_DIR ?= ../../../common_src/
 MKDIR_P = mkdir -p
 
-SRCS := reset_vector.c \
-        nuts_bolts.c \
-        report.c \
-        stepper.c \
-        settings.c \
-        serial.c \
-        system.c \
-        print.c \
-        limits.c \
-        flash.c \
-        gcode.c \
-        motion_control.c \
-        protocol.c \
-        planner.c \
-        probe.c \
-        coolant_control.c spindle_control.c
+SRCS := reset_vector.c flash.c   
+        
+COMMON_SRCS := coolant_control.c \
+               nuts_bolts.c \
+               report.c \
+               stepper.c \
+               settings.c \
+               serial.c \
+               system.c \
+               print.c \
+               limits.c \
+               gcode.c \
+               motion_control.c \
+               protocol.c \
+               planner.c \
+               probe.c \
+               spindle_control.c 
 
 LDSCRIPT = ./nucleo-f401re_ramcode.ld
 
+COMMON_OBJS := $(COMMON_SRCS:%.c=$(OBJ_DIR)%.o)
 OBJS := $(SRCS:%.c=$(OBJ_DIR)%.o)
 BINARY = $(OBJ_DIR)main
+OBJS += $(COMMON_OBJS)
 
 ###############################################################################
 # C & C++ preprocessor common flags
-CPPFLAGS    += -I.  -I./cpu_map -I./defaults
+CPPFLAGS  += -I. -I./cpu_map -I./defaults -I$(COMMON_SRC_DIR)
 
 ###############################################################################
 # Used libraries
@@ -69,6 +73,10 @@ $(OBJ_DIR):
 $(OBJ_DIR)%.o: %.c | $(OBJ_DIR)
 	@#printf "  CC      $(*).c\n"
 	$(Q)$(CC) $(CFLAGS) $(CPPFLAGS) $(ARCH_FLAGS) -o $(OBJ_DIR)$(*).o -c $(*).c
+	
+$(OBJ_DIR)%.o: $(COMMON_SRC_DIR)%.c | $(OBJ_DIR)
+	@#printf "  CC      $(*).c\n"
+	$(Q)$(CC) $(CFLAGS) $(CPPFLAGS) $(ARCH_FLAGS) -o $(OBJ_DIR)$(*).o -c $(COMMON_SRC_DIR)$(*).c
 	
 clean_obj:
 	@#printf "  CLEAN\n"
