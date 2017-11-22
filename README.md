@@ -1,11 +1,11 @@
-# GRBL port using opencm3 libraries
+# GRBL port using opencm3 libraries <span style="float:right;"><a href="https://travis-ci.org/adichell/grbl_port_opencm3" style="border-bottom:none">![Build Status](https://travis-ci.org/adichell/grbl_port_opencm3.svg?branch=master)</a></span>
 [![Gitter channel](https://badges.gitter.im/libopencm3/discuss.svg)](https://gitter.im/grbl_port_opencm3/Lobby)
 
 # Scope
 
-The first idea of this project was to port the GRBL code to the Nucleo F401RE board, that is a quite cheap microcontroller (~10/15 $), but also quite performing (72MHz 32-bit Cortex-M4 CPU and many other features).
+The first idea of this project was to port the GRBL code to the Nucleo F401RE board, that is a cheap microcontroller (~10/15 $), but is also quite performing (84MHz 32-bit Cortex-M4 CPU and many other features).
 In order to achieve this scope, I chose to use libopencm3 as a base library, concentrating the effort on the development/porting of the application while having a light driver access substrate. 
-I used the GRBL version 0.9 as a code base, and then solved some issues to reproduce the same functionality on this microcontroller.
+I used the GRBL version 0.9 as a code base since it is a stable and vastily used version of GRBL, and then solved some issues to reproduce the same functionality on this microcontroller.
 
 Since the libopencm3 are structured to support many microcontrollers, this porting may be achieved with some effort on other popular microcontrollers. 
 And this may be a future development, hopefully with the collaboration of the community.
@@ -37,7 +37,7 @@ If you are compiling under unix environment you need to point to the gcc arm too
 
 Then from a shell change directory to the main project folder and type:  
 
-make bin all
+make bin
 
 , to compile the project and generate the binaries. To clean use the command:  
 
