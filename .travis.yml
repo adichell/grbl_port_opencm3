@@ -20,9 +20,17 @@ install:
   - if [ ! -e $GCC_DIR/bin/arm-none-eabi-g++ ]; then wget $GCC_URL -O $GCC_ARCHIVE; tar xfj $GCC_ARCHIVE -C $HOME; fi
   - export PATH=$PATH:$GCC_DIR/bin	
 
+# Test different make targets
 env:
  - COMMAND="V=1"
  - COMMAND="bin"
+ - COMMAND="bin clean"
+ - COMMAND=""
+ - COMMAND="all"
+ - COMMAND="clean"
+ - COMMAND="lib grbl"
+ - COMMAND="lib grbl V=1"
+ - COMMAND="bin clean_grbl grbl V=1"
 
 script:
   - make $COMMAND
