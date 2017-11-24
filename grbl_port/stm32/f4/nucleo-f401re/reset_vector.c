@@ -20,10 +20,12 @@
 
 #include "grbl.h"
 
+#ifdef NUCLEO_F401
+
 extern int main(void);
 
 /* Symbols exported by the linker script(s): */
-extern unsigned _data_loadaddr, _data, _edata, _ebss, _stack, _ramcode, _eramcode, _ramcode_loadaddr;
+extern unsigned _data_loadaddr, _data, _edata, _bss, _ebss, _stack, _ramcode, _eramcode, _ramcode_loadaddr;
 
 /* Redefine the reset handler to allow ram code copy */
 void reset_handler(void)
@@ -36,15 +38,16 @@ void reset_handler(void)
 		*dest = *src;
 	}
 
+	for (dest = &_bss; dest < &_ebss; dest++) {
+		*dest++ = 0;
+	}
+
 	for (src = &_ramcode_loadaddr, dest = &_ramcode;
 			dest < &_eramcode;
 			src++, dest++) {
 			*dest = *src;
 		}
 
-	while (dest < &_ebss) {
-		*dest++ = 0;
-	}
 
 	/* Disable interrupts to relocate VTOR */
    __disable_irq(); // Global disable interrupts
@@ -62,3 +65,5 @@ void reset_handler(void)
 	/* Call the application's entry point. */
 	main();
 }
+#endif /* NUCLEOF401 */
+
