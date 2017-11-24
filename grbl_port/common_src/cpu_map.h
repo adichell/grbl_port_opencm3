@@ -39,6 +39,9 @@
 #elif defined NUCLEO_F401 // (NUCLEO_F401)
   #include "cpu_map/cpu_map_nucleof401.h"
 
+#elif defined NUCLEO_F103 // (NUCLEO_F103)
+  #include "cpu_map/cpu_map_nucleof103.h"
+
 #else
   #error "Please define an existing pinout mapping file"
 #endif
