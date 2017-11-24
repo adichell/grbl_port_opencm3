@@ -24,6 +24,12 @@
 #define FLASH_WAIT_FOR_LAST_OP while((FLASH_SR & FLASH_SR_BSY) == FLASH_SR_BSY);
 #define FLASH_CR_LOCK_OPERATION  FLASH_CR |= FLASH_CR_LOCK;
 
+/*! \brief  Unlock FLASH erase and program operations.
+ *
+ *  This function is needed to unlock erase and
+ *  program operations of the FLASH.
+ *
+ */
 static void flash_unlock_private(void)
 {
 	/* Clear the unlock sequence state. */
@@ -34,6 +40,14 @@ static void flash_unlock_private(void)
 	FLASH_KEYR = FLASH_KEYR_KEY2;
 };
 
+/*! \brief  Write a byte at a given FLASH address.
+ *
+ *   This function writes one byte at a given FLASH address.
+ *
+ *  \param  address FLASH address to write to.
+ *
+ *  \param  data The byte written to the FLASH address.
+ */
 static void flash_program_byte_private(uint32_t address, uint8_t data)
 {
 	FLASH_WAIT_FOR_LAST_OP
@@ -49,6 +63,14 @@ static void flash_program_byte_private(uint32_t address, uint8_t data)
 	FLASH_CR &= ~FLASH_CR_PG;		/* Disable the PG bit. */
 }
 
+/*! \brief  Write a word at a given FLASH address.
+ *
+ *   This function writes one 32-bit word at a given FLASH address.
+ *
+ *  \param  address FLASH address to write to.
+ *
+ *  \param  data The word written to the FLASH address.
+ */
 static void flash_program_word_private(uint32_t address, uint32_t data)
 {
 	/* Ensure that all flash operations are complete. */
@@ -69,6 +91,14 @@ static void flash_program_word_private(uint32_t address, uint32_t data)
 	FLASH_CR &= ~FLASH_CR_PG;
 }
 
+/*! \brief  Erase a given FLASH sector.
+ *
+ *   This function erases a given sector of FLASH.
+ *
+ *  \param  sector FLASH sector to be erased.
+ *
+ *  \param  program_size program/erase access size.
+ */
 static void flash_erase_sector_private(uint8_t sector, uint32_t program_size)
 {
 	FLASH_WAIT_FOR_LAST_OP
@@ -92,6 +122,7 @@ static void flash_erase_sector_private(uint8_t sector, uint32_t program_size)
  *  \note  The CPU is halted for 4 clock cycles during FLASH read.
  *
  *  \param  addr  FLASH address to read from.
+ *
  *  \return  The byte read from the FLASH address.
  */
 unsigned char flash_get_char( unsigned int addr )
@@ -103,6 +134,17 @@ unsigned char flash_get_char( unsigned int addr )
 }
 
 
+/*! \brief  Verifies if an erase is needed to write the given payload.
+ *
+ *   Check if the values to be written in FLASH needs to set to 1 a bit
+ *   that is at currently at 0, since this needs an erase operation.
+ *
+ *  \param  destination pointer to current stored payload bytes.
+ *
+ *  \param  source pointer to payload bytes.
+ *
+ *  \param  size number of bytes to be checked.
+ */
 unsigned int flash_verify_erase_need(char * destination, char *source, unsigned int size)
 {
 	unsigned int i;
@@ -132,16 +174,10 @@ unsigned int flash_verify_erase_need(char * destination, char *source, unsigned 
  *  The differences between the existing byte and the new value is used
  *  to select the most efficient FLASH programming mode.
  *
- *  \note  The CPU is halted for 2 clock cycles during FLASH programming.
+ *  \param  addr FLASH address to write to.
  *
- *  \note  When this function returns, the new FLASH value is not available
- *         until the FLASH programming time has passed. The EEPE bit in EECR
- *         should be polled to check whether the programming is finished.
+ *  \param  new_value  New FLASH value to write.
  *
- *  \note  The EEPROM_GetChar() function checks the EEPE bit automatically.
- *
- *  \param  addr  FLASH address to write to.
- *  \param  new_value  New FLASH value.
  */
 void flash_put_char( unsigned int addr, unsigned char new_value)
 {
@@ -155,6 +191,16 @@ void flash_put_char( unsigned int addr, unsigned char new_value)
 }
 
 
+/*! \brief Store payload bytes in flash.
+ *
+ *   Store an array of bytes in flash.
+ *
+ *  \param  destination pointer to location where to store payload.
+ *
+ *  \param  source pointer to payload bytes.
+ *
+ *  \param  size number of bytes to be stored.
+ */
 void memcpy_to_flash_with_checksum(unsigned int destination, char *source, unsigned int size)
 {
     unsigned char checksum = 0;
@@ -168,9 +214,20 @@ void memcpy_to_flash_with_checksum(unsigned int destination, char *source, unsig
 }
 
 
+/*! \brief Read payload bytes from flash.
+ *
+ *   Read an array of bytes from flash.
+ *
+ *  \param  destination pointer to location where the payload will be read.
+ *
+ *  \param  source pointer address to bytes to be read.
+ *
+ *  \param  size number of bytes to be stored.
+ */
 int memcpy_from_flash_with_checksum(char *destination, unsigned int source, unsigned int size) {
   unsigned char data, checksum = 0;
-  for(; size > 0; size--) {
+  for(; size > 0; size--)
+  {
     data = flash_get_char(source++);
     checksum = (checksum << 1) || (checksum >> 7);
     checksum += data;
@@ -180,6 +237,13 @@ int memcpy_from_flash_with_checksum(char *destination, unsigned int source, unsi
 }
 
 
+/*! \brief Update main sector status word.
+ *
+ *   Update main sector status word.
+ *
+ *  \param  updated_status status value to be updated in the reserved flash address.
+ *
+ */
 void update_main_sector_status(uint32_t updated_status)
 {
     flash_unlock_private();
@@ -187,6 +251,8 @@ void update_main_sector_status(uint32_t updated_status)
     FLASH_CR_LOCK_OPERATION
 }
 
+/*! \brief Delete main sector.
+ */
 void delete_main_sector(void)
 {
     flash_unlock_private();
@@ -194,6 +260,8 @@ void delete_main_sector(void)
     FLASH_CR_LOCK_OPERATION
 }
 
+/*! \brief Delete copy sector.
+ */
 void delete_copy_sector(void)
 {
     flash_unlock_private();

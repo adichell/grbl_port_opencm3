@@ -112,7 +112,7 @@ uint8_t read_float(char *line, uint8_t *char_counter, float *float_ptr)
 // Simple hypotenuse computation function.
 float hypot_f(float x, float y) { return(sqrt(x*x + y*y)); }
 
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 
 static inline uint32_t SysTick_Config_polling(uint32_t n_ticks)
 {

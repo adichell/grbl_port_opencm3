@@ -21,7 +21,7 @@
 */
 
 #include "grbl.h"
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/usart.h>
@@ -68,7 +68,7 @@ uint8_t serial_get_tx_buffer_count()
 
 void serial_init()
 {
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 	/* Enable GPIOD clock for USART2. */
 	rcc_periph_clock_enable(RCC_GPIOA);
 
@@ -141,7 +141,7 @@ void serial_write(uint8_t data) {
   // Store data and advance head
   serial_tx_buffer[serial_tx_buffer_head] = data;
   serial_tx_buffer_head = next_head;
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 	usart_enable_tx_interrupt(USART2);
 #else
   // Enable Data Register Empty Interrupt to make sure tx-streaming is running
@@ -164,7 +164,7 @@ uint8_t serial_read()
     if (tail == RX_BUFFER_SIZE) { tail = 0; }
     serial_rx_buffer_tail = tail;
 
-#ifndef NUCLEO_F401
+#ifndef NUCLEO
     #ifdef ENABLE_XONXOFF
       if ((serial_get_rx_buffer_count() < RX_BUFFER_LOW) && flow_ctrl == XOFF_SENT) { 
         flow_ctrl = SEND_XON;
@@ -176,7 +176,7 @@ uint8_t serial_read()
   }
 }
 
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 void usart2_isr(void)
 {
 #ifndef USE_RX_DMA
@@ -295,7 +295,7 @@ void serial_reset_read_buffer()
   #endif
 }
 
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 #ifdef USE_RX_DMA
 void serial_rx_dma_init(void)
 {

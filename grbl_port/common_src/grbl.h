@@ -27,8 +27,9 @@
 #define GRBL_VERSION_BUILD "20160726"
 
 #include "config.h"
+#include "cpu_map.h"
 // Define standard libraries used by Grbl.
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 #include <libopencm3/cm3/nvic.h>
 #include <libopencmsis/core_cm3.h>
 #elif defined(CPU_MAP_ATMEGA328P) || defined(CPU_MAP_ATMEGA2560)
@@ -50,7 +51,6 @@
 #include "settings.h"
 #include "system.h"
 #include "defaults.h"
-#include "cpu_map.h"
 #include "coolant_control.h"
 
 #include "gcode.h"

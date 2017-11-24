@@ -23,7 +23,7 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 #include "flash.h"
 #elif defined(CPU_MAP_ATMEGA328P) || defined(CPU_MAP_ATMEGA2560)
 #include "eeprom.h"
@@ -57,7 +57,7 @@
 #define SETTINGS_RESTORE_STARTUP_LINES bit(2)
 #define SETTINGS_RESTORE_BUILD_INFO bit(3)
 
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 typedef enum main_sectore_restore_states_e
 {
 	MAIN_SECTOR_COPIED   = 0x000000FFU,

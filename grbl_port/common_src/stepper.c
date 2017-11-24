@@ -22,7 +22,7 @@
 
 #include "grbl.h"
 
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/timer.h>
@@ -48,7 +48,7 @@
 // and timer accuracy.  Do not alter these settings unless you know what you are doing.
 #define MAX_AMASS_LEVEL 3
 // AMASS_LEVEL0: Normal operation. No AMASS. No upper cutoff frequency. Starts at LEVEL1 cutoff frequency.
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 #define AMASS_LEVEL1 ((F_CPU/PSC_MUL_FACTOR)/8000) // Over-drives ISR (x2). Defined as F_CPU/(Cutoff frequency in Hz)
 #define AMASS_LEVEL2 ((F_CPU/PSC_MUL_FACTOR)/4000) // Over-drives ISR (x4)
 #define AMASS_LEVEL3 ((F_CPU/PSC_MUL_FACTOR)/2000) // Over-drives ISR (x8)
@@ -65,7 +65,7 @@
 // discarded when entirely consumed and completed by the segment buffer. Also, AMASS alters this
 // data for its own use. 
 typedef struct {  
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
   uint16_t direction_bits;
 #else
   uint8_t direction_bits;
@@ -107,7 +107,7 @@ typedef struct {
   
   uint8_t execute_step;     // Flags step execution for each interrupt.
   uint8_t step_pulse_time;  // Step pulse reset time after step rise
-  #ifdef NUCLEO_F401
+  #ifdef NUCLEO
   uint16_t step_outbits;        // The next stepping-bits to be output
   uint16_t dir_outbits;
   #else
@@ -131,7 +131,7 @@ static uint8_t segment_buffer_head;
 static uint8_t segment_next_head;
 
 // Step and direction port invert masks.
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 static uint16_t step_port_invert_mask;
 static uint16_t dir_port_invert_mask;
 #else  
@@ -234,7 +234,7 @@ void st_wake_up()
       OCR0A = -(((settings.pulse_microseconds)*TICKS_PER_MICROSECOND) >> 3);
 	  #endif
     #else // Normal operation
-	  #ifdef NUCLEO_F401
+	  #ifdef NUCLEO
       st.step_pulse_time = (((settings.pulse_microseconds)*TICKS_PER_MICROSECOND) >> 3);
       #else
       // Set step pulse time. Ad hoc computation from oscilloscope. Uses two's complement.
@@ -242,7 +242,7 @@ void st_wake_up()
 	  #endif
     #endif
 
-    #ifdef NUCLEO_F401
+    #ifdef NUCLEO
     timer_clear_flag(TIM4, 0x1FFF);
     /* Enable TIM4 Stepper Driver Interrupt. */
     timer_enable_irq(TIM4, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
@@ -259,7 +259,7 @@ void st_wake_up()
 void st_go_idle(void) 
 {
   // Disable Stepper Driver Interrupt. Allow Stepper Port Reset Interrupt to finish, if active.
-  #ifdef NUCLEO_F401
+  #ifdef NUCLEO
   /* Disable TIM4 Stepper Driver Interrupt. */
   timer_disable_irq(TIM4, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
   timer_set_prescaler(TIM4, ((1*PSC_MUL_FACTOR)-1));// Reset clock to no prescaling, enabling is done before.
@@ -331,7 +331,7 @@ void st_go_idle(void)
 // TODO: Replace direct updating of the int32 position counters in the ISR somehow. Perhaps use smaller
 // int8 variables and update position counters only when a segment completes. This can get complicated 
 // with probing and homing cycles that require true real-time positions.
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 void tim4_isr(void)
 {
 	timer_clear_flag(TIM4, TIM_SR_UIF);
@@ -344,14 +344,14 @@ ISR(TIMER1_COMPA_vect)
   if (busy) { return; } // The busy-flag is used to avoid reentering this interrupt
   
   // Set the direction pins a couple of nanoseconds before we step the steppers
-  #ifdef NUCLEO_F401
+  #ifdef NUCLEO
   SET_DIRECTION_BITS(st.dir_outbits);
   #else
   DIRECTION_PORT = (DIRECTION_PORT & ~DIRECTION_MASK) | (st.dir_outbits & DIRECTION_MASK);
   #endif
 
   // Then pulse the stepping pins
-  #ifdef NUCLEO_F401
+  #ifdef NUCLEO
   #ifdef STEP_PULSE_DELAY
     SAVE_STEP_BITS(st.step_outbits); // Store out_bits to prevent overwriting.
   #else  // Normal operation
@@ -379,7 +379,7 @@ ISR(TIMER1_COMPA_vect)
   #endif //NUCLEO_F401
 
   busy = true;
-  #ifdef NUCLEO_F401
+  #ifdef NUCLEO
   __enable_irq(); // Global enable interrupts
   //equivalent to
   //asm("CPSIE I ;"); //Enable IRQ by clearing PRIMASK
@@ -397,7 +397,7 @@ ISR(TIMER1_COMPA_vect)
       // Initialize new step segment and load number of steps to execute
       st.exec_segment = &segment_buffer[segment_buffer_tail];
 
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 	#ifndef ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING
   	  timer_set_prescaler(TIM4, ((PSC_MUL_FACTOR * st.exec_segment->prescaler)-1));
 	#endif
@@ -409,7 +409,7 @@ ISR(TIMER1_COMPA_vect)
 #endif //NUCLEO_F401
 
       // Initialize step segment timing per step and load number of steps to execute.
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
       timer_set_period(TIM4, st.exec_segment->cycles_per_tick);
 #else
       OCR1A = st.exec_segment->cycles_per_tick;
@@ -507,7 +507,7 @@ ISR(TIMER1_COMPA_vect)
    cause issues at high step rates if another high frequency asynchronous interrupt is 
    added to Grbl.
 */
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 //only an interrupt line is available for both overflow and output compare events, so one isr is used
 void tim2_isr(void)
 {
@@ -594,7 +594,7 @@ void st_reset()
   
   st_generate_step_dir_invert_masks();
 
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
   // Initialize step and direction port pins.
   SET_STEP_BITS(step_port_invert_mask);
   SET_DIRECTION_BITS(dir_port_invert_mask);
@@ -608,7 +608,7 @@ void st_reset()
 // Initialize and start the stepper motor subsystem
 void stepper_init()
 {
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
     /* Enable GPIOA and GPIOB clocks. */
     rcc_periph_clock_enable(RCC_GPIOA);
     rcc_periph_clock_enable(RCC_GPIOB);

@@ -38,7 +38,7 @@
 typedef struct {
   // Fields used by the bresenham algorithm for tracing the line
   // NOTE: Used by stepper algorithm to execute the block correctly. Do not alter these values.
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
   uint16_t direction_bits;
 #else
   uint8_t direction_bits;    // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)

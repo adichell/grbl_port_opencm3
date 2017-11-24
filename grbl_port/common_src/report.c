@@ -30,7 +30,7 @@
 #include "grbl.h"
 
 /* PSTR arduino substituted */
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 #define PSTR(s) s
 #endif
 

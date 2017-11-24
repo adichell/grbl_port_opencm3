@@ -22,7 +22,7 @@
 
 #include "grbl.h"
 
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 
 #include <libopencm3/stm32/timer.h>
 

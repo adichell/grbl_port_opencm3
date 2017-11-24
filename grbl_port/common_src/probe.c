@@ -29,8 +29,8 @@ uint8_t probe_invert_mask;
 // Probe pin initialization routine.
 void probe_init() 
 {
-#ifdef NUCLEO_F401
-  rcc_periph_clock_enable(RCC_GPIOH);
+#ifdef NUCLEO
+  rcc_periph_clock_enable(RCC_GPIOC);
   SET_PROBE_DDR;
   #ifdef DISABLE_PROBE_PIN_PULL_UP
     UNSET_PROBE_PU; // Normal low operation. Requires external pull-down.

@@ -34,7 +34,7 @@ void printString(const char *s)
 void printPgmString(const char *s)
 {
   char c;
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
   while ((c = *s++))
 #else
   while ((c = pgm_read_byte_near(s++)))

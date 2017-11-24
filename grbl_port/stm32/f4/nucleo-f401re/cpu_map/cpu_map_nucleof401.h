@@ -38,12 +38,10 @@
 #error "cpu_map already defined: GRBL_PLATFORM=" GRBL_PLATFORM
 #endif
 
-/* Test nucleo: uncomment this define to use test main */
-//#define TEST_NUCLEO
-//#define TEST_NUCLEO_EXTI_PINS
-
 #define GRBL_PLATFORM "NucleoF401"
 
+#define NUCLEO // Nucleo
+//#define USE_RX_DMA
 
 #define MAIN_SECTOR 6
 #define COPY_SECTOR 7

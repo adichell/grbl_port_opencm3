@@ -27,7 +27,7 @@ settings_t settings;
 void write_global_settings(void);
 uint8_t read_global_settings(void);
 
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 // Method to store Grbl global settings struct and version number into EEPROM
 void write_global_settings()
 {
@@ -86,7 +86,7 @@ void settings_write_coord_data(uint8_t coord_select, float *coord_data)
   }
 }
 
-// Method to store startup lines into EEPROM
+// Method to store startup lines into EEPROM/FLASH
 void settings_store_startup_line(uint8_t n, char *line)
 {
   uint32_t addr = n*(LINE_BUFFER_SIZE+1)+EFLASH_ADDR_STARTUP_BLOCK_MAIN;
@@ -218,13 +218,13 @@ void settings_restore(uint8_t restore_flag) {
   if (restore_flag & SETTINGS_RESTORE_PARAMETERS) {
     uint8_t idx;
     float coord_data[N_AXIS] = {0.0};
-#ifndef NUCLEO_F401
+#ifndef NUCLEO
     memset(&coord_data, 0, sizeof(coord_data));
 #endif
     for (idx=0; idx <= SETTING_INDEX_NCOORD; idx++) { settings_write_coord_data(idx, coord_data); }
   }
   if (restore_flag & SETTINGS_RESTORE_STARTUP_LINES) {
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 	#if N_STARTUP_LINE > 0
     flash_put_char(EFLASH_ADDR_STARTUP_BLOCK_MAIN, 0);
     #endif
@@ -243,7 +243,7 @@ void settings_restore(uint8_t restore_flag) {
   
   if (restore_flag & SETTINGS_RESTORE_BUILD_INFO)
   {
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 	  flash_put_char(EFLASH_ADDR_BUILD_INFO_MAIN , 0);
 #else
 	  eeprom_put_char(EEPROM_ADDR_BUILD_INFO , 0);
@@ -251,7 +251,7 @@ void settings_restore(uint8_t restore_flag) {
   }
 }
 
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 // Reads startup line from FLASH. Updated pointed line string data.
 uint8_t settings_read_startup_line(uint8_t n, char *line)
 {

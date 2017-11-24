@@ -30,7 +30,7 @@ volatile uint8_t sys_rt_exec_alarm;  // Global realtime executor bitflag variabl
 
 void system_init()
 {
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 	/* Enable GPIOA,GPIOB, GPIOC and SYSCFG clocks. */
 	rcc_periph_clock_enable(RCC_GPIOA);
     rcc_periph_clock_enable(RCC_GPIOB);
@@ -83,7 +83,7 @@ void system_init()
 #endif
 }
 
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 void exti1_isr()
 {
 	exti_reset_request(FEED_HOLD_CONTROL_INT_vect);

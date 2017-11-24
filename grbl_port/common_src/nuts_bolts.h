@@ -43,7 +43,7 @@
 // Conversions
 #define MM_PER_INCH (25.40)
 #define INCH_PER_MM (0.0393701)
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 #define TICKS_PER_MICROSECOND ((F_CPU/PSC_MUL_FACTOR)/1000000)
 #else
 #define TICKS_PER_MICROSECOND (F_CPU/1000000)
@@ -58,7 +58,7 @@
 
 // Bit field and masking macros
 #define bit(n) (1 << n) 
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 #define bit_true_atomic(x,mask)   {__asm__ volatile ("CPSID I\n"); (x) |= (mask);  __asm__ volatile ("CPSIE I\n"); }
 #define bit_false_atomic(x,mask)  {__asm__ volatile ("CPSID I\n"); (x) &= ~(mask); __asm__ volatile ("CPSIE I\n"); }
 #define bit_toggle_atomic(x,mask) {__asm__ volatile ("CPSID I\n"); (x) ^= (mask);  __asm__ volatile ("CPSIE I\n"); }
@@ -77,7 +77,7 @@
 // a pointer to the result variable. Returns true when it succeeds
 uint8_t read_float(char *line, uint8_t *char_counter, float *float_ptr);
 
-#ifdef NUCLEO_F401
+#ifdef NUCLEO
 void SysTick_Init(void);
 #endif
 // Delays variable-defined milliseconds. Compiler compatibility fix for _delay_ms().
