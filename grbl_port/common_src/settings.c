@@ -89,9 +89,9 @@ void settings_write_coord_data(uint8_t coord_select, float *coord_data)
 // Method to store startup lines into EEPROM/FLASH
 void settings_store_startup_line(uint8_t n, char *line)
 {
-  uint32_t addr = n*(LINE_BUFFER_SIZE+1)+EFLASH_ADDR_STARTUP_BLOCK_MAIN;
-  uint32_t addr_copy = n*(LINE_BUFFER_SIZE+1) + EFLASH_ADDR_STARTUP_BLOCK_COPY;
-  uint32_t status = flash_verify_erase_need((char *) addr, (char*)line, ((unsigned int)LINE_BUFFER_SIZE + 1));
+  uint32_t addr = n*(LINE_BUFFER_SIZE+4)+EFLASH_ADDR_STARTUP_BLOCK_MAIN;
+  uint32_t addr_copy = n*(LINE_BUFFER_SIZE+4) + EFLASH_ADDR_STARTUP_BLOCK_COPY;
+  uint32_t status = flash_verify_erase_need((char *) addr, (char*)line, ((unsigned int)LINE_BUFFER_SIZE));
 
   if (status == 0)
   {
@@ -105,8 +105,8 @@ void settings_store_startup_line(uint8_t n, char *line)
 	  memcpy_to_flash_with_checksum(addr_copy, (char*)line, LINE_BUFFER_SIZE);
 
 	  //copy into copy-sector the rest of the main sector relevant parts
-	  copy_from_main_to_copy(((uint32_t)0), EFLASH_ADDR_STARTUP_BLOCK_OFFSET + n*(LINE_BUFFER_SIZE+1) - 1);
-	  copy_from_main_to_copy(((uint32_t)n*(LINE_BUFFER_SIZE+1)+LINE_BUFFER_SIZE)+EFLASH_ADDR_STARTUP_BLOCK_OFFSET, ((uint32_t)EFLASH_ERASE_AND_RESTORE_OFFSET));
+	  copy_from_main_to_copy(((uint32_t)0), EFLASH_ADDR_STARTUP_BLOCK_OFFSET + n*(LINE_BUFFER_SIZE+4) - 1);
+	  copy_from_main_to_copy(((uint32_t)n*(LINE_BUFFER_SIZE+4)+LINE_BUFFER_SIZE)+EFLASH_ADDR_STARTUP_BLOCK_OFFSET, ((uint32_t)EFLASH_ERASE_AND_RESTORE_OFFSET));
 
 	  //update status since main sector has been copied
       update_main_sector_status(MAIN_SECTOR_COPIED);
@@ -120,7 +120,7 @@ void settings_store_build_info(char *line)
 {
   uint32_t addr = EFLASH_ADDR_BUILD_INFO_MAIN;
   uint32_t addr_copy = EFLASH_ADDR_BUILD_INFO_COPY;
-  uint32_t status = flash_verify_erase_need((char *) addr, (char*)line, ((unsigned int)LINE_BUFFER_SIZE + 1));
+  uint32_t status = flash_verify_erase_need((char *) addr, (char*)line, ((unsigned int)LINE_BUFFER_SIZE));
 
   if (status == 0)
   {
@@ -229,7 +229,7 @@ void settings_restore(uint8_t restore_flag) {
     flash_put_char(EFLASH_ADDR_STARTUP_BLOCK_MAIN, 0);
     #endif
     #if N_STARTUP_LINE > 1
-    flash_put_char(EFLASH_ADDR_STARTUP_BLOCK_MAIN+(LINE_BUFFER_SIZE+1), 0);
+    flash_put_char(EFLASH_ADDR_STARTUP_BLOCK_MAIN+(LINE_BUFFER_SIZE+4), 0);
     #endif
 #else
 	#if N_STARTUP_LINE > 0
@@ -255,7 +255,7 @@ void settings_restore(uint8_t restore_flag) {
 // Reads startup line from FLASH. Updated pointed line string data.
 uint8_t settings_read_startup_line(uint8_t n, char *line)
 {
-  uint32_t addr = n*(LINE_BUFFER_SIZE+1)+EFLASH_ADDR_STARTUP_BLOCK_MAIN;
+  uint32_t addr = n*(LINE_BUFFER_SIZE+4)+EFLASH_ADDR_STARTUP_BLOCK_MAIN;
   if (!(memcpy_from_flash_with_checksum((char*)line, addr, LINE_BUFFER_SIZE))) {
     // Reset line with default value
     line[0] = 0; // Empty line
