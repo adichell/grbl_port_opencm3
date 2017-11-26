@@ -24,6 +24,7 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/exti.h>
 #include <libopencm3/stm32/flash.h>
+#include <libopencm3/stm32/timer.h>
 
 //#define BASIC_CPU_SPEED
 #ifdef BASIC_CPU_SPEED
@@ -41,7 +42,7 @@
 #define GRBL_PLATFORM "NucleoF401"
 
 #define NUCLEO // Nucleo
-//#define USE_RX_DMA
+#define USE_RX_DMA
 
 #define MAIN_SECTOR 6
 #define COPY_SECTOR 7

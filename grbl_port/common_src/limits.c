@@ -89,9 +89,11 @@ void limits_init()
   }
   
   #ifdef ENABLE_SOFTWARE_DEBOUNCE
+  #ifndef NUCLEO
     MCUSR &= ~(1<<WDRF);
     WDTCSR |= (1<<WDCE) | (1<<WDE);
     WDTCSR = (1<<WDP0); // Set time-out at ~32msec.
+  #endif
   #endif
 #endif //ifdef NUCLEO_F401
 }
@@ -212,11 +214,64 @@ void exti9_5_isr()
   }  
 //TODO: adjust software debounce isr routine for nucleo 
 #else // OPTIONAL: Software debounce limit pin routine.
-  // Upon limit pin change, enable watchdog timer to create a short delay. 
+  // Upon limit pin change, enable watchdog timer to create a short delay.
+#ifdef NUCLEO
+void exti0_isr()
+{
+	exti_reset_request(LIMIT_INT_vect_Z);
+	nvic_clear_pending_irq(NVIC_EXTI0_IRQ);
+
+	/* Enable TIM5 clock. */
+	rcc_periph_clock_enable(RCC_TIM5);
+	timer_reset(TIM5);
+	/* Continous mode. */
+	timer_continuous_mode(TIM5);
+	timer_set_mode(TIM5, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+    /* ARR reload enable. */
+    timer_enable_preload(TIM5);
+    timer_set_prescaler(TIM5, (256*PSC_MUL_FACTOR)-1);// set to 1/8 Prescaler
+	timer_set_period(TIM5, 0X09FF);
+
+    /* Enable TIM5 Stepper Driver Interrupt. */
+    timer_enable_irq(TIM5, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
+	nvic_enable_irq(NVIC_TIM5_IRQ);
+    timer_enable_counter(TIM5); /* Counter enable. */
+}
+void exti9_5_isr()
+{
+	/* Clear interrupt request */
+	exti_reset_request(LIMIT_INT_vect);
+	nvic_clear_pending_irq(NVIC_EXTI9_5_IRQ);
+
+	/* Enable TIM5 clock. */
+	rcc_periph_clock_enable(RCC_TIM5);
+	timer_reset(TIM5);
+	/* Continous mode. */
+	timer_continuous_mode(TIM5);
+	timer_set_mode(TIM5, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+    /* ARR reload enable. */
+    timer_enable_preload(TIM5);
+    timer_set_prescaler(TIM5, (256*PSC_MUL_FACTOR)-1);// set to 1/8 Prescaler
+	timer_set_period(TIM5, 0X09FF);
+
+    /* Enable TIM5 Stepper Driver Interrupt. */
+    timer_enable_irq(TIM5, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
+	nvic_enable_irq(NVIC_TIM5_IRQ);
+    timer_enable_counter(TIM5); /* Counter enable. */
+}
+
+void tim5_isr()
+{
+	timer_disable_counter(TIM5);
+	nvic_clear_pending_irq(NVIC_TIM5_IRQ);
+	nvic_disable_irq(NVIC_TIM5_IRQ);
+
+#else
   ISR(LIMIT_INT_vect) { if (!(WDTCSR & (1<<WDIE))) { WDTCSR |= (1<<WDIE); } }
   ISR(WDT_vect) // Watchdog timer ISR
   {
-    WDTCSR &= ~(1<<WDIE); // Disable watchdog timer. 
+    WDTCSR &= ~(1<<WDIE); // Disable watchdog timer.
+#endif
     if (sys.state != STATE_ALARM) {  // Ignore if already in alarm state. 
       if (!(sys_rt_exec_alarm)) {
         // Check limit pin state. 
