@@ -242,7 +242,11 @@ void limits_go_home(uint8_t cycle_mask)
 
   // Initialize
   uint8_t n_cycle = (2*N_HOMING_LOCATE_CYCLE+1);
+#ifdef NUCLEO
+  uint16_t step_pin[N_AXIS];
+#else
   uint8_t step_pin[N_AXIS];
+#endif
   float target[N_AXIS];
   float max_travel = 0.0;
   uint8_t idx;
@@ -264,7 +268,12 @@ void limits_go_home(uint8_t cycle_mask)
   bool approach = true;
   float homing_rate = settings.homing_seek_rate;
 
-  uint8_t limit_state, axislock, n_active_axis;
+  uint8_t limit_state, n_active_axis;
+#ifdef NUCLEO
+  uint16_t axislock;
+#else
+  uint8_t axislock;
+#endif
   do {
 
     system_convert_array_steps_to_mpos(target,sys.position);
