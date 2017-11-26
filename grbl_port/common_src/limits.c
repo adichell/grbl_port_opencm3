@@ -102,6 +102,7 @@ void limits_disable()
 {
 #ifdef NUCLEO
 	nvic_disable_irq(LIMIT_INT);// Disable Limits pins Interrupt
+	nvic_disable_irq(LIMIT_INT_Z);// Disable Limits pins Interrupt
 #else
   LIMIT_PCMSK &= ~LIMIT_MASK;  // Disable specific pins of the Pin Change Interrupt
   PCICR &= ~(1 << LIMIT_INT);  // Disable Pin Change Interrupt
