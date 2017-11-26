@@ -151,9 +151,12 @@ unsigned int flash_verify_erase_need(char * destination, char *source, unsigned 
     char new_value; // New EFLASH value.
     char old_value; // Old EFLASH value.
     char diff_mask; // Difference mask, i.e. old value XOR new value.
+    unsigned char checksum = 0;
 
     for(i = 0; i < size; i++)
     {
+    	checksum = (checksum << 1) || (checksum >> 7);
+    	checksum += *source;
         new_value = *(source+i); // new EFLASH value.
         old_value = *(destination+i); // Get old EFLASH value.
         diff_mask = old_value ^ new_value; // Get bit differences.
@@ -164,6 +167,15 @@ unsigned int flash_verify_erase_need(char * destination, char *source, unsigned 
             return ((unsigned int)1);
         }
     }
+
+    new_value = *(source+i);
+    diff_mask = checksum ^ new_value; // Get bit differences.
+    // Check if any bits needs to be changed to '1' in the checksum.
+	if( diff_mask & new_value )
+	{
+		return ((unsigned int)1);
+	}
+
     return ((unsigned int)0);
 
 }

@@ -31,7 +31,7 @@ uint8_t read_global_settings(void);
 // Method to store Grbl global settings struct and version number into EEPROM
 void write_global_settings()
 {
-  uint32_t status = flash_verify_erase_need((char *) EFLASH_MAIN_BASE_ADDRESS, (char*)&settings, ((unsigned int)sizeof(settings_t) +1));
+  uint32_t status = flash_verify_erase_need((char *) EFLASH_MAIN_BASE_ADDRESS, (char*)&settings, ((unsigned int)sizeof(settings_t)));
 
   if (status == 0)
   {
