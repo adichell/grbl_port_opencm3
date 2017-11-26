@@ -22,15 +22,10 @@ install:
 
 # Test different make targets
 env:
- - COMMAND="V=1"
  - COMMAND="bin"
  - COMMAND="bin clean"
- - COMMAND=""
- - COMMAND="all"
  - COMMAND="clean"
  - COMMAND="lib grbl"
- - COMMAND="lib grbl V=1"
- - COMMAND="bin clean_grbl grbl V=1"
-
+ 
 script:
   - make $COMMAND
