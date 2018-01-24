@@ -244,7 +244,7 @@ void memcpy_to_flash_with_checksum(unsigned int destination, char *source, unsig
 
     for(; size > 0; size = size-2)
     {
-        checksum = (checksum << 1) || (checksum >> 7);
+        checksum = (checksum << 1) | (checksum >> 7);
         checksum += *src;
         flash_program_half_word_private(((uint32_t)destination), *src);
         destination += 2;
@@ -275,7 +275,7 @@ int memcpy_from_flash_with_checksum(char *destination, unsigned int source, unsi
   for(; size > 0; size = size-2)
   {
     data = flash_get_half_word(source);
-    checksum = (checksum << 1) || (checksum >> 7);
+    checksum = (checksum << 1) | (checksum >> 7);
     checksum += data;
     *(dst) = data;
     dst++;

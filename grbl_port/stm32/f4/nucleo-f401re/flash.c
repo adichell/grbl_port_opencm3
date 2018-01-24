@@ -155,7 +155,7 @@ unsigned int flash_verify_erase_need(char * destination, char *source, unsigned 
 
     for(i = 0; i < size; i++)
     {
-    	checksum = (checksum << 1) || (checksum >> 7);
+    	checksum = (checksum << 1) | (checksum >> 7);
     	checksum += *source;
         new_value = *(source+i); // new EFLASH value.
         old_value = *(destination+i); // Get old EFLASH value.
@@ -218,7 +218,7 @@ void memcpy_to_flash_with_checksum(unsigned int destination, char *source, unsig
     unsigned char checksum = 0;
     for(; size > 0; size--)
     {
-        checksum = (checksum << 1) || (checksum >> 7);
+        checksum = (checksum << 1) | (checksum >> 7);
         checksum += *source;
         flash_put_char(destination++, *(source++));
     }
@@ -241,7 +241,7 @@ int memcpy_from_flash_with_checksum(char *destination, unsigned int source, unsi
   for(; size > 0; size--)
   {
     data = flash_get_char(source++);
-    checksum = (checksum << 1) || (checksum >> 7);
+    checksum = (checksum << 1) | (checksum >> 7);
     checksum += data;
     *(destination++) = data;
   }
