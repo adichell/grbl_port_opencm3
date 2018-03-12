@@ -44,30 +44,30 @@ void spindle_init()
     SET_SPINDLE_DIRECTION_DDR; // Configure as output pin.
   #endif
   
-    /* Enable TIM3 clock. */
-    rcc_periph_clock_enable(RCC_TIM3);
-    timer_reset(TIM3);
+    /* Enable SPINDLE_TIMER clock. */
+    rcc_periph_clock_enable(SPINDLE_TIMER_RCC);
+    timer_reset(SPINDLE_TIMER);
     /* Continous mode. */
-    timer_continuous_mode(TIM3);
+    timer_continuous_mode(SPINDLE_TIMER);
     /* Timer global mode:
      * - No divider
      * - Alignment edge
      * - Direction up
      */
-    timer_set_mode(TIM3, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
-    timer_set_clock_division(TIM3, 0);            // Adjusts speed of timer
-   	timer_set_master_mode(TIM3, TIM_CR2_MMS_UPDATE);   // Master Mode Selection
+    timer_set_mode(SPINDLE_TIMER, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+    timer_set_clock_division(SPINDLE_TIMER, 0);            // Adjusts speed of timer
+   	timer_set_master_mode(SPINDLE_TIMER, TIM_CR2_MMS_UPDATE);   // Master Mode Selection
    	/* ARR reload enable. */
-    timer_enable_preload(TIM3);
+    timer_enable_preload(SPINDLE_TIMER);
     // Disconnect OC1 output
-    timer_disable_oc_output(TIM3, TIM_OC2);
-    timer_disable_oc_output(TIM3, TIM_OC3);
-    timer_disable_oc_output(TIM3, TIM_OC4);
+    timer_disable_oc_output(SPINDLE_TIMER, TIM_OC2);
+    timer_disable_oc_output(SPINDLE_TIMER, TIM_OC3);
+    timer_disable_oc_output(SPINDLE_TIMER, TIM_OC4);
     /* Set output compare mode */
-	timer_set_oc_mode(TIM3, TIM_OC1, TIM_OCM_PWM1);
-	timer_enable_oc_preload(TIM3, TIM_OC1);           // Sets OCxPE in TIMx_CCMRx
-	timer_set_oc_polarity_high(TIM3, TIM_OC1);        // set desired polarity in TIMx_CCER
-	timer_enable_oc_output(TIM3, TIM_OC1);
+	timer_set_oc_mode(SPINDLE_TIMER, TIM_OC1, TIM_OCM_PWM1);
+	timer_enable_oc_preload(SPINDLE_TIMER, TIM_OC1);           // Sets OCxPE in TIMx_CCMRx
+	timer_set_oc_polarity_high(SPINDLE_TIMER, TIM_OC1);        // set desired polarity in TIMx_CCER
+	timer_enable_oc_output(SPINDLE_TIMER, TIM_OC1);
 
 
 	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO6);
@@ -81,9 +81,9 @@ void spindle_stop()
   // On the Nucleo F401, spindle enable and PWM are shared. Other CPUs have seperate enable pin.
   #ifdef VARIABLE_SPINDLE
     /* Disable PWM. Output voltage is zero. */
-    timer_disable_oc_output(TIM3, TIM_OC1);
+    timer_disable_oc_output(SPINDLE_TIMER, TIM_OC1);
     /* Counter disable. */
-    timer_disable_counter(TIM3); 
+    timer_disable_counter(SPINDLE_TIMER);
     #if defined(USE_SPINDLE_DIR_AS_ENABLE_PIN)
       #ifdef INVERT_SPINDLE_ENABLE_PIN
         SET_SPINDLE_ENABLE;  // Set pin to high
@@ -119,9 +119,9 @@ void spindle_set_state(uint8_t state, float rpm)
 
     #ifdef VARIABLE_SPINDLE
         /* PWM settings done in the init, shall not need to be repeated. */
-        timer_set_prescaler(TIM3, (8*PSC_MUL_FACTOR)-1);// set to 1/8 Prescaler
-        timer_set_oc_value(TIM3, TIM_OC1, 0xFFFF);// set the top 16bit value
-        timer_set_period(TIM3, 0X00FF);
+        timer_set_prescaler(SPINDLE_TIMER, (128*PSC_MUL_FACTOR)-1);// set to 1/8 Prescaler
+        timer_set_oc_value(SPINDLE_TIMER, TIM_OC1, 0xFFFF);// set the top 16bit value
+        timer_set_period(SPINDLE_TIMER, 0X09FF);
         
         uint16_t current_pwm;
 
@@ -137,12 +137,12 @@ void spindle_set_state(uint8_t state, float rpm)
         #ifdef MINIMUM_SPINDLE_PWM
           if (current_pwm < MINIMUM_SPINDLE_PWM) { current_pwm = MINIMUM_SPINDLE_PWM; }
         #endif
-        timer_set_oc_value(TIM3, TIM_OC1, current_pwm);// Set PWM pin output
-        timer_enable_oc_output(TIM3, TIM_OC1);
+        timer_set_oc_value(SPINDLE_TIMER, TIM_OC1, current_pwm);// Set PWM pin output
+        timer_enable_oc_output(SPINDLE_TIMER, TIM_OC1);
         /* Generate update event to update shadow registers */
     	timer_generate_event(TIM2, TIM_EGR_UG);
         /* Counter enable. */
-        timer_enable_counter(TIM3); 
+        timer_enable_counter(SPINDLE_TIMER);
     
         // if spindle enable and PWM are shared, unless otherwise specified.
         #if defined(USE_SPINDLE_DIR_AS_ENABLE_PIN) 

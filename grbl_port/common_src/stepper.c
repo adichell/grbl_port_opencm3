@@ -228,7 +228,7 @@ void st_wake_up()
       // Set total step pulse time after direction pin set. Ad hoc computation from oscilloscope.
       st.step_pulse_time = -(((settings.pulse_microseconds+STEP_PULSE_DELAY-2)*TICKS_PER_MICROSECOND) >> 3);
 	  #ifdef NUCLEO_F401
-      timer_set_oc_value(TIM2, TIM_OC1, -(((settings.pulse_microseconds)*TICKS_PER_MICROSECOND) >> 3));
+      timer_set_oc_value(STEPPER_PULSE_TIMER, TIM_OC1, -(((settings.pulse_microseconds)*TICKS_PER_MICROSECOND) >> 3));
       #else
       // Set delay between direction pin write and step command.
       OCR0A = -(((settings.pulse_microseconds)*TICKS_PER_MICROSECOND) >> 3);
@@ -243,11 +243,11 @@ void st_wake_up()
     #endif
 
     #ifdef NUCLEO
-    timer_clear_flag(TIM4, 0x1FFF);
-    /* Enable TIM4 Stepper Driver Interrupt. */
-    timer_enable_irq(TIM4, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
-    timer_enable_counter(TIM4); /* Counter enable. */
-    timer_generate_event(TIM4, TIM_EGR_UG);
+    timer_clear_flag(STEPPER_MAIN_TIMER, 0x1FFF);
+    /* Enable MAIN Stepper Driver Interrupt. */
+    timer_enable_irq(STEPPER_MAIN_TIMER, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
+    timer_enable_counter(STEPPER_MAIN_TIMER); /* Counter enable. */
+    timer_generate_event(STEPPER_MAIN_TIMER, TIM_EGR_UG);
     #else
     // Enable Stepper Driver Interrupt
     TIMSK1 |= (1<<OCIE1A);
@@ -260,9 +260,9 @@ void st_go_idle(void)
 {
   // Disable Stepper Driver Interrupt. Allow Stepper Port Reset Interrupt to finish, if active.
   #ifdef NUCLEO
-  /* Disable TIM4 Stepper Driver Interrupt. */
-  timer_disable_irq(TIM4, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
-  timer_set_prescaler(TIM4, ((1*PSC_MUL_FACTOR)-1));// Reset clock to no prescaling, enabling is done before.
+  /* Disable Main Stepper Driver Interrupt. */
+  timer_disable_irq(STEPPER_MAIN_TIMER, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
+  timer_set_prescaler(STEPPER_MAIN_TIMER, ((1*PSC_MUL_FACTOR)-1));// Reset clock to no prescaling, enabling is done before.
   #else
   TIMSK1 &= ~(1<<OCIE1A); // Disable Timer1 interrupt
   TCCR1B = (TCCR1B & ~((1<<CS12) | (1<<CS11))) | (1<<CS10); // Reset clock to no prescaling.
@@ -332,9 +332,9 @@ void st_go_idle(void)
 // int8 variables and update position counters only when a segment completes. This can get complicated 
 // with probing and homing cycles that require true real-time positions.
 #ifdef NUCLEO
-void tim4_isr(void)
+void MAIN_TIMER_ISR(void)
 {
-	timer_clear_flag(TIM4, TIM_SR_UIF);
+	timer_clear_flag(STEPPER_MAIN_TIMER, TIM_SR_UIF);
 #else
 ISR(TIMER1_COMPA_vect)
 {
@@ -360,9 +360,9 @@ ISR(TIMER1_COMPA_vect)
   
   // Enable step pulse reset timer so that The Stepper Port Reset Interrupt can reset the signal after
   // exactly settings.pulse_microseconds microseconds, independent of the main Timer1 prescaler.
-  timer_set_period(TIM2, st.step_pulse_time); // Reload Timer2 counter
-  timer_set_prescaler(TIM2, (8*PSC_MUL_FACTOR)-1); // Full speed, 1/8 prescaler
-  timer_enable_counter(TIM2);   // START Timer2 count. 
+  timer_set_period(STEPPER_PULSE_TIMER, st.step_pulse_time); // Reload Timer2 counter
+  timer_set_prescaler(STEPPER_PULSE_TIMER, (8*PSC_MUL_FACTOR)-1); // Full speed, 1/8 prescaler
+  timer_enable_counter(STEPPER_PULSE_TIMER);   // START Timer2 count.
   
   #else
   #ifdef STEP_PULSE_DELAY
@@ -399,7 +399,7 @@ ISR(TIMER1_COMPA_vect)
 
 #ifdef NUCLEO
 	#ifndef ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING
-  	  timer_set_prescaler(TIM4, ((PSC_MUL_FACTOR * st.exec_segment->prescaler)-1));
+  	  timer_set_prescaler(STEPPER_MAIN_TIMER, ((PSC_MUL_FACTOR * st.exec_segment->prescaler)-1));
 	#endif
 #else
 	#ifndef ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING
@@ -410,7 +410,7 @@ ISR(TIMER1_COMPA_vect)
 
       // Initialize step segment timing per step and load number of steps to execute.
 #ifdef NUCLEO
-      timer_set_period(TIM4, st.exec_segment->cycles_per_tick);
+      timer_set_period(STEPPER_MAIN_TIMER, st.exec_segment->cycles_per_tick);
 #else
       OCR1A = st.exec_segment->cycles_per_tick;
 #endif
@@ -509,19 +509,19 @@ ISR(TIMER1_COMPA_vect)
 */
 #ifdef NUCLEO
 //only an interrupt line is available for both overflow and output compare events, so one isr is used
-void tim2_isr(void)
+void PULSE_TIMER_ISR(void)
 {
     // This interrupt is enabled by ISR_TIMER1_COMPAREA when it sets the motor port bits to execute
     // a step. This ISR resets the motor port after a short period (settings.pulse_microseconds) 
     // completing one step cycle.
     /* check if update interrupt event has occured */
-    if(timer_interrupt_source(TIM2, TIM_SR_UIF))
+    if(timer_interrupt_source(STEPPER_PULSE_TIMER, TIM_SR_UIF))
     {
         /* clear flag */
-        timer_clear_flag(TIM2, TIM_SR_UIF);
+        timer_clear_flag(STEPPER_PULSE_TIMER, TIM_SR_UIF);
         // Reset stepping pins (leave the direction pins)
 		SET_STEP_BITS(step_port_invert_mask);
-        timer_disable_counter(TIM2); // Disable Timer2 to prevent re-entering this interrupt when it's not needed.
+        timer_disable_counter(STEPPER_PULSE_TIMER); // Disable Timer2 to prevent re-entering this interrupt when it's not needed.
     }
     #ifdef STEP_PULSE_DELAY
     // This interrupt is used only when STEP_PULSE_DELAY is enabled. Here, the step pulse is
@@ -530,10 +530,10 @@ void tim2_isr(void)
     // The new timing between direction, step pulse, and step complete events are setup in the
     // st_wake_up() routine.
     /* check if a compare interrupt event has occured */
-    if(timer_interrupt_source(TIM2, TIM_SR_CC1IF))
+    if(timer_interrupt_source(STEPPER_PULSE_TIMER, TIM_SR_CC1IF))
     {
         /* clear flag */
-        timer_clear_flag(TIM2, TIM_SR_CC1IF);
+        timer_clear_flag(STEPPER_PULSE_TIMER, TIM_SR_CC1IF);
 		SET_STEPS(st.step_bits);// Begin step pulse.
     }
     #endif //STEP_PULSE_DELAY
@@ -621,53 +621,53 @@ void stepper_init()
     /* Interrupt by output compare mode shall be used */
     /* Clear Timer on Compare match may be substituted 
        by Auto-Reload feature in normal upcounting mode */
-    /* Enable TIM4 clock. */
-    rcc_periph_clock_enable(RCC_TIM4);
-    timer_reset(TIM4);
+    /* Enable STEPPER_MAIN_TIMER clock. */
+    rcc_periph_clock_enable(MAIN_TIMER_RCC);
+    timer_reset(STEPPER_MAIN_TIMER);
     /* Continous mode. */
-    timer_continuous_mode(TIM4);
+    timer_continuous_mode(STEPPER_MAIN_TIMER);
     /* Timer global mode:
 	 * - No divider
 	 * - Alignment edge
 	 * - Direction up
 	 */
-	timer_set_mode(TIM4, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+	timer_set_mode(STEPPER_MAIN_TIMER, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
     /* ARR reload enable. */
-    timer_enable_preload(TIM4);
+    timer_enable_preload(STEPPER_MAIN_TIMER);
     // Disconnect OC1 output
-    timer_disable_oc_output(TIM4, TIM_OC1);
-    timer_disable_oc_output(TIM4, TIM_OC2);
-    timer_disable_oc_output(TIM4, TIM_OC3);
-    timer_disable_oc_output(TIM4, TIM_OC4);
-    timer_ic_disable(TIM4, TIM_IC1);
-    timer_ic_disable(TIM4, TIM_IC2);
-    timer_ic_disable(TIM4, TIM_IC3);
-    timer_ic_disable(TIM4, TIM_IC4);
-    timer_update_on_overflow(TIM4);
+    timer_disable_oc_output(STEPPER_MAIN_TIMER, TIM_OC1);
+    timer_disable_oc_output(STEPPER_MAIN_TIMER, TIM_OC2);
+    timer_disable_oc_output(STEPPER_MAIN_TIMER, TIM_OC3);
+    timer_disable_oc_output(STEPPER_MAIN_TIMER, TIM_OC4);
+    timer_ic_disable(STEPPER_MAIN_TIMER, TIM_IC1);
+    timer_ic_disable(STEPPER_MAIN_TIMER, TIM_IC2);
+    timer_ic_disable(STEPPER_MAIN_TIMER, TIM_IC3);
+    timer_ic_disable(STEPPER_MAIN_TIMER, TIM_IC4);
+    timer_update_on_overflow(STEPPER_MAIN_TIMER);
 
     /* TO BE VERIFIED: here timer 1 is not enabled, while in previous code it was likely clock gated */
     
     /* Timer 2 is used as stepper driver interrupt (previously TIM0) */
     /* Interrupt by overflow shall be used */
-    /* Enable TIM2 clock. */
-    rcc_periph_clock_enable(RCC_TIM2);
-    timer_reset(TIM2);
+    /* Enable STEPPER_PULSE_TIMER clock. */
+    rcc_periph_clock_enable(PULSE_TIMER_RCC);
+    timer_reset(STEPPER_PULSE_TIMER);
     /* Timer global mode:
      * - No divider
      * - Alignment edge
      * - Direction up
      */
-    timer_set_mode(TIM2, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
-    /* Enable TIM4 interrupt. */
-    nvic_enable_irq(NVIC_TIM4_IRQ); /*to be verified if this may be placed here */
-	nvic_set_priority(NVIC_TIM4_IRQ, 0x40); /* lower interrupt priority with pre-emption */
+    timer_set_mode(STEPPER_PULSE_TIMER, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+    /* Enable STEPPER_MAIN_TIMER interrupt. */
+    nvic_enable_irq(MAIN_TIMER_IRQ); /*to be verified if this may be placed here */
+	nvic_set_priority(MAIN_TIMER_IRQ, 0x40); /* lower interrupt priority with pre-emption */
     
-    /* Enable TIM2 interrupt. */
-    nvic_enable_irq(NVIC_TIM2_IRQ); /*to be verified if this may be placed here */
+    /* Enable STEPPER_PULSE_TIMER interrupt. */
+    nvic_enable_irq(PULSE_TIMER_IRQ); /*to be verified if this may be placed here */
     /* Enable commutation interrupt. */
-    timer_enable_irq(TIM2, TIM_DIER_UIE);/** Update interrupt enable */
+    timer_enable_irq(STEPPER_PULSE_TIMER, TIM_DIER_UIE);/** Update interrupt enable */
   #ifdef STEP_PULSE_DELAY
-    timer_enable_irq(TIM2, TIM_DIER_CC1IE); /** Capture/compare 1 interrupt enable */
+    timer_enable_irq(STEPPER_PULSE_TIMER, TIM_DIER_CC1IE); /** Capture/compare 1 interrupt enable */
   #endif
   
 #else

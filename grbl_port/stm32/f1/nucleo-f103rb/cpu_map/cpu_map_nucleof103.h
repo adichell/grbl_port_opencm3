@@ -43,6 +43,19 @@
 #define NUCLEO // Nucleo
 //#define USE_RX_DMA
 
+#define STEPPER_MAIN_TIMER  TIM4
+#define MAIN_TIMER_ISR      tim4_isr
+#define MAIN_TIMER_RCC      RCC_TIM4
+#define MAIN_TIMER_IRQ      NVIC_TIM4_IRQ
+
+#define STEPPER_PULSE_TIMER TIM2
+#define PULSE_TIMER_ISR     tim2_isr
+#define PULSE_TIMER_IRQ     NVIC_TIM2_IRQ
+#define PULSE_TIMER_RCC     RCC_TIM2
+
+#define SPINDLE_TIMER       TIM3
+#define SPINDLE_TIMER_RCC   RCC_TIM3
+
 #define MAIN_SECTOR 126
 #define COPY_SECTOR 127
 #define EFLASH_MAIN_BASE_ADDRESS          0x0801F800U
