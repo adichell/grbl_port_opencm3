@@ -43,18 +43,50 @@
 #define NUCLEO // Nucleo
 //#define USE_RX_DMA
 
-#define STEPPER_MAIN_TIMER  TIM4
-#define MAIN_TIMER_ISR      tim4_isr
-#define MAIN_TIMER_RCC      RCC_TIM4
-#define MAIN_TIMER_IRQ      NVIC_TIM4_IRQ
+#ifdef USE_RX_DMA
+#define SERIAL_DMA              DMA1
+#define SERIAL_DMA_RCC          RCC_DMA1
+#define SERIAL_DMA_STREAM       DMA_STREAM5
+#define SERIAL_DMA_ISR          dma1_stream5_isr
+#define SERIAL_DMA_IRQ          NVIC_DMA1_STREAM5_IRQ
+#endif
 
-#define STEPPER_PULSE_TIMER TIM2
-#define PULSE_TIMER_ISR     tim2_isr
-#define PULSE_TIMER_IRQ     NVIC_TIM2_IRQ
-#define PULSE_TIMER_RCC     RCC_TIM2
+#define SERIAL_USART            USART2
+#define SERIAL_USART_BASE       USART2_BASE
+#define SERIAL_USART_RCC        RCC_USART2
+#define SERIAL_USART_RCC_GPIO   RCC_GPIOA
+#define SERIAL_USART_GPIO_GROUP GPIOA
+#define SERIAL_USART_GPIO_AF    GPIO_AF7
+#define SERIAL_USART_GPIOS      (GPIO2 | GPIO3)
+#define SERIAL_USART_ISR        usart2_isr
+#define SERIAL_USART_IRQ        NVIC_USART2_IRQ
 
-#define SPINDLE_TIMER       TIM3
-#define SPINDLE_TIMER_RCC   RCC_TIM3
+#define STEPPER_GPIOS_RCC      (RCC_GPIOA | RCC_GPIOB)
+
+#define STEPPER_MAIN_TIMER     TIM4
+#define MAIN_TIMER_ISR         tim4_isr
+#define MAIN_TIMER_RCC         RCC_TIM4
+#define MAIN_TIMER_IRQ         NVIC_TIM4_IRQ
+
+#define STEPPER_PULSE_TIMER    TIM2
+#define PULSE_TIMER_ISR        tim2_isr
+#define PULSE_TIMER_IRQ        NVIC_TIM2_IRQ
+#define PULSE_TIMER_RCC        RCC_TIM2
+
+#define SW_DEBOUNCE_TIMER      TIM5
+#define SW_DEBOUNCE_TIMER_RCC  RCC_TIM5
+#define SW_DEBOUNCE_TIMER_IRQ  NVIC_TIM5_IRQ
+#define SW_DEBOUNCE_TIMER_ISR  tim5_isr
+
+#define SPINDLE_TIMER          TIM3
+#define SPINDLE_TIMER_RCC      RCC_TIM3
+#define SPINDLE_TIMER_CHAN     TIM_OC1
+#define SPINDLE_TIMER_PWM_TYPE TIM_OCM_PWM1
+#define SPINDLE_GPIO_GROUP     GPIOA
+#define SPINDLE_GPIO_AF        GPIO_AF2
+#define SPINDLE_GPIO           GPIO6
+
+#define COOLANT_RCC            RCC_GPIOC
 
 #define MAIN_SECTOR 126
 #define COPY_SECTOR 127
@@ -121,38 +153,44 @@
 
 // Define homing/hard limit switch input pins and limit interrupt vectors.
 // NOTE: All limit bit pins must be on the same port
+#define LIMIT_X_GPIO             GPIOC
 #define LIMIT_X_DDR              GPIOC_CRL
 #define LIMIT_X_PORT             GPIOC_ODR
 #define LIMIT_X_PIN              GPIOC_IDR
 #define LIMIT_X_PU               GPIOC_ODR
-#define X_LIMIT_BIT               7                     // NucleoF103 Digital PC7
+#define X_LIMIT_BIT              7                     // NucleoF103 Digital PC7
 #define LIMIT_X_PU_MASK          (0x00000001<<X_LIMIT_BIT)     // X limit pull-up mask
 #define LIMIT_X_PU_RESET_MASK    LIMIT_X_PU_MASK        // X limit pull-up reset mask
 #define LIMIT_X_DDR_RESET_MASK   (0x00000003<<(X_LIMIT_BIT*4 + 2)) // X limit dir mask
 #define LIMIT_X_MASK             (0x00000001<<X_LIMIT_BIT)       // X limit bits
+#define LIMIT_X_EXTI             EXTI7
 
-#define LIMIT_Y_DDR               GPIOB_CRL
-#define LIMIT_Y_PORT              GPIOB_ODR
-#define LIMIT_Y_PIN               GPIOB_IDR
-#define LIMIT_Y_PU                GPIOB_ODR
-#define Y_LIMIT_BIT               6                        // NucleoF103 Digital PB6
-#define LIMIT_Y_PU_MASK           (0x00000001<<Y_LIMIT_BIT)       // Y limit pull-up mask
-#define LIMIT_Y_PU_RESET_MASK     LIMIT_Y_PU_MASK          // Y limit pull-up reset mask
-#define LIMIT_Y_DDR_RESET_MASK    ((0x00000003<<(Y_LIMIT_BIT*4 + 2))) // Y limit dir mask
-#define LIMIT_Y_MASK              (0x00000001<<Y_LIMIT_BIT)         // Y limit bits
+#define LIMIT_Y_GPIO             GPIOB
+#define LIMIT_Y_DDR              GPIOB_CRL
+#define LIMIT_Y_PORT             GPIOB_ODR
+#define LIMIT_Y_PIN              GPIOB_IDR
+#define LIMIT_Y_PU               GPIOB_ODR
+#define Y_LIMIT_BIT              6                        // NucleoF103 Digital PB6
+#define LIMIT_Y_PU_MASK          (0x00000001<<Y_LIMIT_BIT)       // Y limit pull-up mask
+#define LIMIT_Y_PU_RESET_MASK    LIMIT_Y_PU_MASK          // Y limit pull-up reset mask
+#define LIMIT_Y_DDR_RESET_MASK   ((0x00000003<<(Y_LIMIT_BIT*4 + 2))) // Y limit dir mask
+#define LIMIT_Y_MASK             (0x00000001<<Y_LIMIT_BIT)         // Y limit bits
+#define LIMIT_Y_EXTI             EXTI6
 
-#define LIMIT_Z_DDR               GPIOB_CRL
-#define LIMIT_Z_PORT              GPIOB_ODR
-#define LIMIT_Z_PIN               GPIOB_IDR
-#define LIMIT_Z_PU                GPIOB_ODR
-#define Z_LIMIT_BIT               0                        // NucleoF103 Digital PB0
-#define LIMIT_Z_PU_MASK           (0x00000001<<Z_LIMIT_BIT)       // Z limit pull-up mask
-#define LIMIT_Z_PU_RESET_MASK     LIMIT_Z_PU_MASK          // Z limit pull-up reset mask
-#define LIMIT_Z_DDR_RESET_MASK    ((0x00000003<<(Z_LIMIT_BIT*4 + 2))) // Z limit dir mask
-#define LIMIT_Z_MASK              (0x00000001<<Z_LIMIT_BIT)         // Z limit bits
+#define LIMIT_Z_GPIO             GPIOB
+#define LIMIT_Z_DDR              GPIOB_CRL
+#define LIMIT_Z_PORT             GPIOB_ODR
+#define LIMIT_Z_PIN              GPIOB_IDR
+#define LIMIT_Z_PU               GPIOB_ODR
+#define Z_LIMIT_BIT              0                        // NucleoF103 Digital PB0
+#define LIMIT_Z_PU_MASK          (0x00000001<<Z_LIMIT_BIT)       // Z limit pull-up mask
+#define LIMIT_Z_PU_RESET_MASK    LIMIT_Z_PU_MASK          // Z limit pull-up reset mask
+#define LIMIT_Z_DDR_RESET_MASK   ((0x00000003<<(Z_LIMIT_BIT*4 + 2))) // Z limit dir mask
+#define LIMIT_Z_MASK             (0x00000001<<Z_LIMIT_BIT)         // Z limit bits
+#define LIMIT_Z_EXTI             EXTI0
 
-#define LIMIT_MASK                (LIMIT_X_MASK | LIMIT_Y_MASK | LIMIT_Z_MASK)
-#define INVERT_LIMIT_PIN_MASK     (LIMIT_MASK)
+#define LIMIT_MASK               (LIMIT_X_MASK | LIMIT_Y_MASK | LIMIT_Z_MASK)
+#define INVERT_LIMIT_PIN_MASK    (LIMIT_MASK)
 
 /* Interrupt defines for LIMIT PINS */
 #define LIMIT_INT                 NVIC_EXTI9_5_IRQ  // Pin change interrupt enable pin
@@ -165,6 +203,7 @@
 
 // Define user-control CONTROLs (cycle start, reset, feed hold) input pins.
 // NOTE: All CONTROLs pins must be on the same port and not on a port with other input pins (limits).
+#define RESET_CONTROL_GPIO              GPIOB
 #define RESET_CONTROL_DDR               GPIOB_CRL
 #define RESET_CONTROL_PORT              GPIOB_ODR
 #define RESET_CONTROL_PIN               GPIOB_IDR
@@ -177,8 +216,9 @@
 /* Interrupt defines for RESET CONTROL PIN */
 #define RESET_CONTROL_INT               NVIC_EXTI2_IRQ        // Pin change interrupt enable pin
 #define RESET_CONTROL_INT_vect          (EXTI2)
-#define RESET_CONTROL_PCMSK             NVIC_EXTI2_IRQ        // Pin change interrupt register
+#define RESET_CONTROL_ISR               exti2_isr        // Pin change interrupt register
 
+#define FEED_HOLD_CONTROL_GPIO          GPIOA
 #define FEED_HOLD_CONTROL_DDR           GPIOA_CRL
 #define FEED_HOLD_CONTROL_PORT          GPIOA_ODR
 #define FEED_HOLD_CONTROL_PIN           GPIOA_IDR
@@ -191,8 +231,9 @@
 /* Interrupt defines for FEED-HOLD CONTROL PIN */
 #define FEED_HOLD_CONTROL_INT           NVIC_EXTI1_IRQ           // Pin change interrupt enable pin
 #define FEED_HOLD_CONTROL_INT_vect      (EXTI1)
-#define FEED_HOLD_CONTROL_PCMSK         NVIC_EXTI1_IRQ           // Pin change interrupt register
+#define FEED_HOLD_CONTROL_ISR           exti1_isr           // Pin change interrupt register
 
+#define CYCLE_START_CONTROL_GPIO        GPIOA
 #define CYCLE_START_CONTROL_DDR         GPIOA_CRL
 #define CYCLE_START_CONTROL_PORT        GPIOA_ODR
 #define CYCLE_START_CONTROL_PIN         GPIOA_IDR
@@ -205,8 +246,9 @@
 /* Interrupt defines for CYCLE START CONTROL PIN */
 #define CYCLE_START_CONTROL_INT           NVIC_EXTI4_IRQ // Pin change interrupt enable pin
 #define CYCLE_START_CONTROL_INT_vect      (EXTI4)
-#define CYCLE_START_CONTROL_PCMSK         NVIC_EXTI4_IRQ // Pin change interrupt register
+#define CYCLE_START_CONTROL_ISR           exti4_isr // Pin change interrupt register
 
+#define SAFETY_DOOR_CONTROL_GPIO          GPIOC
 #define SAFETY_DOOR_CONTROL_DDR           GPIOC_CRL
 #define SAFETY_DOOR_CONTROL_PORT          GPIOC_ODR
 #define SAFETY_DOOR_CONTROL_PIN           GPIOC_IDR
@@ -219,9 +261,7 @@
 /* Interrupt defines for SAFETY DOOR CONTROL PIN */
 #define SAFETY_DOOR_CONTROL_INT           NVIC_EXTI3_IRQ  // Pin change interrupt enable pin
 #define SAFETY_DOOR_CONTROL_INT_vect      (EXTI3)
-#define SAFETY_DOOR_CONTROL_PCMSK         NVIC_EXTI3_IRQ // Pin change interrupt register
-
-
+#define SAFETY_DOOR_CONTROL_ISR           exti3_isr // Pin change interrupt register
 
 #define CONTROL_INT_vect  (RESET_CONTROL_INT_vect | FEED_HOLD_CONTROL_INT_vect | CYCLE_START_CONTROL_INT_vect | SAFETY_DOOR_CONTROL_INT_vect)
 
@@ -295,6 +335,12 @@
 #define COOLANT_MIST_MASK              (0x00000001<<COOLANT_MIST_BIT)     // COOLANT_MIST mask bit
 #endif
 
+#define SET_GPIOS_RCCS \
+  do { \
+    rcc_periph_clock_enable(RCC_GPIOA); \
+    rcc_periph_clock_enable(RCC_GPIOB); \
+  } while (0)
+
 #define SET_STEP_DDR \
   do { \
     STEP_X_DDR &= ~STEP_X_DDR_RESET_MASK; \
@@ -333,6 +379,20 @@
     DIRECTION_Z_PORT  = (DIRECTION_Z_PORT & ~DIRECTION_MASK_Z) | (dirbits & DIRECTION_MASK_Z); \
     DIRECTION_XY_PORT = (DIRECTION_XY_PORT & ~DIRECTION_MASK_XY) | (dirbits & DIRECTION_MASK_XY); \
   } while (0)
+
+#define SET_LIMITS_RCC \
+  do { \
+    rcc_periph_clock_enable(RCC_GPIOB); \
+    rcc_periph_clock_enable(RCC_GPIOC); \
+} while (0)
+
+#define SET_SYSTEM_RCC \
+  do { \
+	rcc_periph_clock_enable(RCC_GPIOA); \
+    rcc_periph_clock_enable(RCC_GPIOB); \
+    rcc_periph_clock_enable(RCC_GPIOC); \
+    rcc_periph_clock_enable(RCC_AFIO); \
+} while (0)
 
 /* set limits pins as inputs */
 #define SET_LIMITS_DDR \

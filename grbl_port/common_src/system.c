@@ -32,10 +32,7 @@ void system_init()
 {
 #ifdef NUCLEO
 	/* Enable GPIOA,GPIOB, GPIOC and SYSCFG clocks. */
-	rcc_periph_clock_enable(RCC_GPIOA);
-    rcc_periph_clock_enable(RCC_GPIOB);
-    rcc_periph_clock_enable(RCC_GPIOC);
-    rcc_periph_clock_enable(RCC_SYSCFG);
+	SET_SYSTEM_RCC;
 
 	SET_CONTROLS_DDR; // Configure as input pins
 #ifdef DISABLE_CONTROL_PIN_PULL_UP
@@ -50,16 +47,16 @@ void system_init()
 	exti_reset_request(SAFETY_DOOR_CONTROL_INT_vect);
 
 	/*reset pending exti interrupts */
-	nvic_clear_pending_irq(NVIC_EXTI1_IRQ);
-	nvic_clear_pending_irq(NVIC_EXTI2_IRQ);
-	nvic_clear_pending_irq(NVIC_EXTI3_IRQ);
-	nvic_clear_pending_irq(NVIC_EXTI4_IRQ);
+	nvic_clear_pending_irq(FEED_HOLD_CONTROL_INT);
+	nvic_clear_pending_irq(RESET_CONTROL_INT);
+	nvic_clear_pending_irq(SAFETY_DOOR_CONTROL_INT);
+	nvic_clear_pending_irq(CYCLE_START_CONTROL_INT);
 
 	//exti_select_source(EXTI0, GPIOC);
-	exti_select_source(RESET_CONTROL_INT_vect, GPIOB);
-	exti_select_source(FEED_HOLD_CONTROL_INT_vect, GPIOA);
-	exti_select_source(CYCLE_START_CONTROL_INT_vect, GPIOA);
-	exti_select_source(SAFETY_DOOR_CONTROL_INT_vect, GPIOC);
+	exti_select_source(RESET_CONTROL_INT_vect, RESET_CONTROL_GPIO);
+	exti_select_source(FEED_HOLD_CONTROL_INT_vect, FEED_HOLD_CONTROL_GPIO);
+	exti_select_source(CYCLE_START_CONTROL_INT_vect, CYCLE_START_CONTROL_GPIO);
+	exti_select_source(SAFETY_DOOR_CONTROL_INT_vect, SAFETY_DOOR_CONTROL_GPIO);
 	exti_enable_request(CONTROL_INT_vect);
 	exti_set_trigger(CONTROL_INT_vect, EXTI_TRIGGER_FALLING);
 
@@ -84,40 +81,40 @@ void system_init()
 }
 
 #ifdef NUCLEO
-void exti1_isr()
+void FEED_HOLD_CONTROL_ISR()
 {
 	exti_reset_request(FEED_HOLD_CONTROL_INT_vect);
-	nvic_clear_pending_irq(NVIC_EXTI1_IRQ);
+	nvic_clear_pending_irq(FEED_HOLD_CONTROL_INT);
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_interrupt_signalling((uint32_t)1);
 #endif
     bit_true(sys_rt_exec_state, EXEC_FEED_HOLD);
 }
 
-void exti2_isr()
+void RESET_CONTROL_ISR()
 {
 	exti_reset_request(RESET_CONTROL_INT_vect);
-	nvic_clear_pending_irq(NVIC_EXTI2_IRQ);
+	nvic_clear_pending_irq(RESET_CONTROL_INT);
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_interrupt_signalling((uint32_t)2);
 #endif
 	mc_reset();
 }
 
-void exti3_isr()
+void SAFETY_DOOR_CONTROL_ISR()
 {
 	exti_reset_request(SAFETY_DOOR_CONTROL_INT_vect);
-	nvic_clear_pending_irq(NVIC_EXTI3_IRQ);
+	nvic_clear_pending_irq(SAFETY_DOOR_CONTROL_INT);
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_interrupt_signalling((uint32_t)3);
 #endif
     bit_true(sys_rt_exec_state, EXEC_SAFETY_DOOR);
 }
 
-void exti4_isr()
+void CYCLE_START_CONTROL_ISR()
 {
 	exti_reset_request(CYCLE_START_CONTROL_INT_vect);
-	nvic_clear_pending_irq(NVIC_EXTI4_IRQ);
+	nvic_clear_pending_irq(CYCLE_START_CONTROL_INT);
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_interrupt_signalling((uint32_t)4);
 #endif

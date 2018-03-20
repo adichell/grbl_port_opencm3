@@ -37,9 +37,7 @@
 void limits_init() 
 {
 #ifdef NUCLEO
-    rcc_periph_clock_enable(RCC_GPIOB);
-    rcc_periph_clock_enable(RCC_GPIOC);
-    rcc_periph_clock_enable(RCC_SYSCFG);
+	SET_LIMITS_RCC;
 
 	SET_LIMITS_DDR;  // Set as input pins
 	#ifdef DISABLE_LIMIT_PIN_PULL_UP
@@ -55,9 +53,9 @@ void limits_init()
     	/*reset pending exti interrupts */
     	nvic_clear_pending_irq(LIMIT_INT);
     	nvic_clear_pending_irq(LIMIT_INT_Z);
-    	exti_select_source(EXTI0, GPIOB);
-    	exti_select_source(EXTI6, GPIOB);
-    	exti_select_source(EXTI7, GPIOC);
+    	exti_select_source(LIMIT_X_EXTI, LIMIT_X_GPIO);
+    	exti_select_source(LIMIT_Y_EXTI, LIMIT_Y_GPIO);
+    	exti_select_source(LIMIT_Z_EXTI, LIMIT_Z_GPIO);
     	exti_enable_request(LIMIT_INT_vect);
 		exti_set_trigger(LIMIT_INT_vect, EXTI_TRIGGER_FALLING);
 		nvic_enable_irq(LIMIT_INT);// Enable Limits pins Interrupt
@@ -221,21 +219,21 @@ void exti0_isr()
 	exti_reset_request(LIMIT_INT_vect_Z);
 	nvic_clear_pending_irq(NVIC_EXTI0_IRQ);
 
-	/* Enable TIM5 clock. */
-	rcc_periph_clock_enable(RCC_TIM5);
-	timer_reset(TIM5);
+	/* Enable SW_DEBOUNCE_TIMER clock. */
+	rcc_periph_clock_enable(SW_DEBOUNCE_TIMER_RCC);
+	timer_reset(SW_DEBOUNCE_TIMER);
 	/* Continous mode. */
-	timer_continuous_mode(TIM5);
-	timer_set_mode(TIM5, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+	timer_continuous_mode(SW_DEBOUNCE_TIMER);
+	timer_set_mode(SW_DEBOUNCE_TIMER, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
     /* ARR reload enable. */
-    timer_enable_preload(TIM5);
-    timer_set_prescaler(TIM5, (256*PSC_MUL_FACTOR)-1);// set to 1/8 Prescaler
-	timer_set_period(TIM5, 0X09FF);
+    timer_enable_preload(SW_DEBOUNCE_TIMER);
+    timer_set_prescaler(SW_DEBOUNCE_TIMER, (256*PSC_MUL_FACTOR)-1);// set to 1/8 Prescaler
+	timer_set_period(SW_DEBOUNCE_TIMER, 0X09FF);
 
-    /* Enable TIM5 Stepper Driver Interrupt. */
-    timer_enable_irq(TIM5, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
-	nvic_enable_irq(NVIC_TIM5_IRQ);
-    timer_enable_counter(TIM5); /* Counter enable. */
+    /* Enable SW_DEBOUNCE_TIMER Stepper Driver Interrupt. */
+    timer_enable_irq(SW_DEBOUNCE_TIMER, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
+	nvic_enable_irq(SW_DEBOUNCE_TIMER_IRQ);
+    timer_enable_counter(SW_DEBOUNCE_TIMER); /* Counter enable. */
 }
 void exti9_5_isr()
 {
@@ -243,28 +241,28 @@ void exti9_5_isr()
 	exti_reset_request(LIMIT_INT_vect);
 	nvic_clear_pending_irq(NVIC_EXTI9_5_IRQ);
 
-	/* Enable TIM5 clock. */
-	rcc_periph_clock_enable(RCC_TIM5);
-	timer_reset(TIM5);
+	/* Enable SW_DEBOUNCE_TIMER clock. */
+	rcc_periph_clock_enable(SW_DEBOUNCE_TIMER_RCC);
+	timer_reset(SW_DEBOUNCE_TIMER);
 	/* Continous mode. */
-	timer_continuous_mode(TIM5);
-	timer_set_mode(TIM5, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+	timer_continuous_mode(SW_DEBOUNCE_TIMER);
+	timer_set_mode(SW_DEBOUNCE_TIMER, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
     /* ARR reload enable. */
-    timer_enable_preload(TIM5);
-    timer_set_prescaler(TIM5, (256*PSC_MUL_FACTOR)-1);// set to 1/8 Prescaler
-	timer_set_period(TIM5, 0X09FF);
+    timer_enable_preload(SW_DEBOUNCE_TIMER);
+    timer_set_prescaler(SW_DEBOUNCE_TIMER, (256*PSC_MUL_FACTOR)-1);// set to 1/8 Prescaler
+	timer_set_period(SW_DEBOUNCE_TIMER, 0X09FF);
 
-    /* Enable TIM5 Stepper Driver Interrupt. */
-    timer_enable_irq(TIM5, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
-	nvic_enable_irq(NVIC_TIM5_IRQ);
-    timer_enable_counter(TIM5); /* Counter enable. */
+    /* Enable SW_DEBOUNCE_TIMER Stepper Driver Interrupt. */
+    timer_enable_irq(SW_DEBOUNCE_TIMER, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
+	nvic_enable_irq(SW_DEBOUNCE_TIMER_IRQ);
+    timer_enable_counter(SW_DEBOUNCE_TIMER); /* Counter enable. */
 }
 
-void tim5_isr()
+void SW_DEBOUNCE_TIMER_ISR()
 {
-	timer_disable_counter(TIM5);
-	nvic_clear_pending_irq(NVIC_TIM5_IRQ);
-	nvic_disable_irq(NVIC_TIM5_IRQ);
+	timer_disable_counter(SW_DEBOUNCE_TIMER);
+	nvic_clear_pending_irq(SW_DEBOUNCE_TIMER_IRQ);
+	nvic_disable_irq(SW_DEBOUNCE_TIMER_IRQ);
 
 #else
   ISR(LIMIT_INT_vect) { if (!(WDTCSR & (1<<WDIE))) { WDTCSR |= (1<<WDIE); } }

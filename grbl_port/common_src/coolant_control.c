@@ -25,7 +25,7 @@
 
 void coolant_init(void)
 {
-  rcc_periph_clock_enable(RCC_GPIOC);
+  rcc_periph_clock_enable(COOLANT_RCC);
   SET_COOLANT_FLOOD_DDR;
 #ifdef ENABLE_M7
   SET_COOLANT_MIST_DDR;

@@ -26,13 +26,15 @@ SRC_DIR ?= ./
 COMMON_SRC_DIR ?= ../../../common_src/
 MKDIR_P = mkdir -p
 
-SRCS := reset_vector.c flash.c serial.c system.c limits.c spindle_control.c settings.c
+SRCS := reset_vector.c flash.c serial.c spindle_control.c settings.c
         
 COMMON_SRCS := coolant_control.c \
                nuts_bolts.c \
                report.c \
                stepper.c \
+               system.c \
                print.c \
+               limits.c \
                gcode.c \
                motion_control.c \
                protocol.c \

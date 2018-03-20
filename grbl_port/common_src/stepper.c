@@ -262,7 +262,7 @@ void st_go_idle(void)
   #ifdef NUCLEO
   /* Disable Main Stepper Driver Interrupt. */
   timer_disable_irq(STEPPER_MAIN_TIMER, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
-  timer_set_prescaler(STEPPER_MAIN_TIMER, ((1*PSC_MUL_FACTOR)-1));// Reset clock to no prescaling, enabling is done before.
+  timer_set_prescaler(STEPPER_MAIN_TIMER, (PSC_MUL_FACTOR-1));// Reset clock to no prescaling, enabling is done before.
   #else
   TIMSK1 &= ~(1<<OCIE1A); // Disable Timer1 interrupt
   TCCR1B = (TCCR1B & ~((1<<CS12) | (1<<CS11))) | (1<<CS10); // Reset clock to no prescaling.
@@ -610,8 +610,8 @@ void stepper_init()
 {
 #ifdef NUCLEO
     /* Enable GPIOA and GPIOB clocks. */
-    rcc_periph_clock_enable(RCC_GPIOA);
-    rcc_periph_clock_enable(RCC_GPIOB);
+	SET_GPIOS_RCCS;
+
     // Configure step and direction interface pins
     SET_STEP_DDR;
 	STEPPERS_DISABLE_DDR |= STEPPERS_DISABLE_MASK_DDR; //this is slightly different, but should be retro-compatible

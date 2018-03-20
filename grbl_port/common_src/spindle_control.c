@@ -59,19 +59,16 @@ void spindle_init()
    	timer_set_master_mode(SPINDLE_TIMER, TIM_CR2_MMS_UPDATE);   // Master Mode Selection
    	/* ARR reload enable. */
     timer_enable_preload(SPINDLE_TIMER);
-    // Disconnect OC1 output
-    timer_disable_oc_output(SPINDLE_TIMER, TIM_OC2);
-    timer_disable_oc_output(SPINDLE_TIMER, TIM_OC3);
-    timer_disable_oc_output(SPINDLE_TIMER, TIM_OC4);
+
     /* Set output compare mode */
-	timer_set_oc_mode(SPINDLE_TIMER, TIM_OC1, TIM_OCM_PWM1);
-	timer_enable_oc_preload(SPINDLE_TIMER, TIM_OC1);           // Sets OCxPE in TIMx_CCMRx
-	timer_set_oc_polarity_high(SPINDLE_TIMER, TIM_OC1);        // set desired polarity in TIMx_CCER
-	timer_enable_oc_output(SPINDLE_TIMER, TIM_OC1);
+	timer_set_oc_mode(SPINDLE_TIMER, SPINDLE_TIMER_CHAN, SPINDLE_TIMER_PWM_TYPE);
+	timer_enable_oc_preload(SPINDLE_TIMER, SPINDLE_TIMER_CHAN);           // Sets OCxPE in TIMx_CCMRx
+	timer_set_oc_polarity_high(SPINDLE_TIMER, SPINDLE_TIMER_CHAN);        // set desired polarity in TIMx_CCER
+	timer_enable_oc_output(SPINDLE_TIMER, SPINDLE_TIMER_CHAN);
 
 
-	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO6);
-	gpio_set_af(GPIOA, GPIO_AF2, GPIO6);
+	gpio_mode_setup(SPINDLE_GPIO_GROUP, GPIO_MODE_AF, GPIO_PUPD_NONE, SPINDLE_GPIO);
+	gpio_set_af(SPINDLE_GPIO_GROUP, SPINDLE_GPIO_AF, SPINDLE_GPIO);
     
     spindle_stop();
 }
@@ -81,7 +78,7 @@ void spindle_stop()
   // On the Nucleo F401, spindle enable and PWM are shared. Other CPUs have seperate enable pin.
   #ifdef VARIABLE_SPINDLE
     /* Disable PWM. Output voltage is zero. */
-    timer_disable_oc_output(SPINDLE_TIMER, TIM_OC1);
+    timer_disable_oc_output(SPINDLE_TIMER, SPINDLE_TIMER_CHAN);
     /* Counter disable. */
     timer_disable_counter(SPINDLE_TIMER);
     #if defined(USE_SPINDLE_DIR_AS_ENABLE_PIN)
@@ -120,7 +117,7 @@ void spindle_set_state(uint8_t state, float rpm)
     #ifdef VARIABLE_SPINDLE
         /* PWM settings done in the init, shall not need to be repeated. */
         timer_set_prescaler(SPINDLE_TIMER, (128*PSC_MUL_FACTOR)-1);// set to 1/8 Prescaler
-        timer_set_oc_value(SPINDLE_TIMER, TIM_OC1, 0xFFFF);// set the top 16bit value
+        timer_set_oc_value(SPINDLE_TIMER, SPINDLE_TIMER_CHAN, 0xFFFF);// set the top 16bit value
         timer_set_period(SPINDLE_TIMER, 0X09FF);
         
         uint16_t current_pwm;
@@ -137,10 +134,9 @@ void spindle_set_state(uint8_t state, float rpm)
         #ifdef MINIMUM_SPINDLE_PWM
           if (current_pwm < MINIMUM_SPINDLE_PWM) { current_pwm = MINIMUM_SPINDLE_PWM; }
         #endif
-        timer_set_oc_value(SPINDLE_TIMER, TIM_OC1, current_pwm);// Set PWM pin output
-        timer_enable_oc_output(SPINDLE_TIMER, TIM_OC1);
-        /* Generate update event to update shadow registers */
-    	timer_generate_event(TIM2, TIM_EGR_UG);
+        timer_set_oc_value(SPINDLE_TIMER, SPINDLE_TIMER_CHAN, current_pwm);// Set PWM pin output
+        timer_enable_oc_output(SPINDLE_TIMER, SPINDLE_TIMER_CHAN);
+
         /* Counter enable. */
         timer_enable_counter(SPINDLE_TIMER);
     
