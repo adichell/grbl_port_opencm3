@@ -122,7 +122,7 @@ void spindle_set_state(uint8_t state, float rpm)
         
         uint16_t current_pwm;
 
-      if (rpm <= 0.0) { spindle_stop(); } // RPM should never be negative, but check anyway.
+      if (rpm < 0.0) { spindle_stop(); } // RPM should never be negative, but check anyway.
       else {
         #define SPINDLE_RPM_RANGE (SPINDLE_MAX_RPM-SPINDLE_MIN_RPM)
         if ( rpm < SPINDLE_MIN_RPM ) { rpm = 0; } 
