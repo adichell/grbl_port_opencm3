@@ -24,7 +24,7 @@
 
 // Grbl versioning system
 #define GRBL_VERSION "0.9j"
-#define GRBL_VERSION_BUILD "20160726"
+#define GRBL_VERSION_BUILD __DATE__" "__TIME__
 
 #include "config.h"
 #include "cpu_map.h"

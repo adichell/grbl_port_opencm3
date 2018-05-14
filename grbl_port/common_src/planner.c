@@ -273,13 +273,19 @@ uint8_t plan_check_full_buffer()
   // TODO: After this for-loop, we don't touch the stepper algorithm data. Might be a good idea
   // to try to keep these types of things completely separate from the planner for portability.
   int32_t target_steps[N_AXIS];
-  float unit_vec[N_AXIS], delta_mm;
+  float unit_vec[N_AXIS], delta_mm,delta_mm_signed;
   uint8_t idx;
   #ifdef COREXY
+    float corexy_dir_invert_X, corexy_dir_invert_Y, corexy_dir_invert_Z;
+
+    corexy_dir_invert_X = bit_istrue(settings.dir_invert_mask,bit(X_AXIS)) ? -1 : 1;
+    corexy_dir_invert_Y = bit_istrue(settings.dir_invert_mask,bit(Y_AXIS)) ? -1 : 1;
+    corexy_dir_invert_Z = bit_istrue(settings.dir_invert_mask,bit(Z_AXIS)) ? -1 : 1;
+
     target_steps[A_MOTOR] = lround(target[A_MOTOR]*settings.steps_per_mm[A_MOTOR]);
     target_steps[B_MOTOR] = lround(target[B_MOTOR]*settings.steps_per_mm[B_MOTOR]);
-    block->steps[A_MOTOR] = labs((target_steps[X_AXIS]-pl.position[X_AXIS]) + (target_steps[Y_AXIS]-pl.position[Y_AXIS]));
-    block->steps[B_MOTOR] = labs((target_steps[X_AXIS]-pl.position[X_AXIS]) - (target_steps[Y_AXIS]-pl.position[Y_AXIS]));
+    block->steps[A_MOTOR] = labs(corexy_dir_invert_X*(target_steps[X_AXIS]-pl.position[X_AXIS]) + corexy_dir_invert_Y * (target_steps[Y_AXIS]-pl.position[Y_AXIS]));
+    block->steps[B_MOTOR] = labs(corexy_dir_invert_X*(target_steps[X_AXIS]-pl.position[X_AXIS]) - corexy_dir_invert_Y * (target_steps[Y_AXIS]-pl.position[Y_AXIS]));
   #endif
 
   for (idx=0; idx<N_AXIS; idx++) {
@@ -294,21 +300,28 @@ uint8_t plan_check_full_buffer()
       block->step_event_count = max(block->step_event_count, block->steps[idx]);
       if (idx == A_MOTOR) {
         delta_mm = (target_steps[X_AXIS]-pl.position[X_AXIS] + target_steps[Y_AXIS]-pl.position[Y_AXIS])/settings.steps_per_mm[idx];
+    	delta_mm_signed = (corexy_dir_invert_X*(target_steps[X_AXIS]-pl.position[X_AXIS]) + corexy_dir_invert_Y*(target_steps[Y_AXIS]-pl.position[Y_AXIS]))/settings.steps_per_mm[idx];
       } else if (idx == B_MOTOR) {
         delta_mm = (target_steps[X_AXIS]-pl.position[X_AXIS] - target_steps[Y_AXIS]+pl.position[Y_AXIS])/settings.steps_per_mm[idx];
+        delta_mm_signed = (corexy_dir_invert_X*(target_steps[X_AXIS]-pl.position[X_AXIS]) + corexy_dir_invert_Y*(-target_steps[Y_AXIS]+pl.position[Y_AXIS]))/settings.steps_per_mm[idx];
       } else {
         delta_mm = (target_steps[idx] - pl.position[idx])/settings.steps_per_mm[idx];
+        delta_mm_signed = (corexy_dir_invert_Z*(target_steps[idx] - pl.position[idx]))/settings.steps_per_mm[idx];
       }
+      // Set direction bits. Bit enabled always means direction is negative.
+      if (delta_mm_signed < 0 ) { block->direction_bits |= get_direction_pin_mask(idx); }
+
+      unit_vec[idx] = delta_mm_signed; // Store unit vector numerator. Denominator computed later.
     #else
       target_steps[idx] = lround(target[idx]*settings.steps_per_mm[idx]);
       block->steps[idx] = labs(target_steps[idx]-pl.position[idx]);
       block->step_event_count = max(block->step_event_count, block->steps[idx]);
       delta_mm = (target_steps[idx] - pl.position[idx])/settings.steps_per_mm[idx];
-    #endif
-    unit_vec[idx] = delta_mm; // Store unit vector numerator. Denominator computed later.
         
     // Set direction bits. Bit enabled always means direction is negative.
     if (delta_mm < 0 ) { block->direction_bits |= get_direction_pin_mask(idx); }
+      unit_vec[idx] = delta_mm; // Store unit vector numerator. Denominator computed later.
+    #endif
     
     // Incrementally compute total move distance by Euclidean norm. First add square of each term.
     block->millimeters += delta_mm*delta_mm;

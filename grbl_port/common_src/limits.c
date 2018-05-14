@@ -214,11 +214,8 @@ void exti9_5_isr()
 #else // OPTIONAL: Software debounce limit pin routine.
   // Upon limit pin change, enable watchdog timer to create a short delay.
 #ifdef NUCLEO
-void exti0_isr()
+static void enable_debounce_timer(void)
 {
-	exti_reset_request(LIMIT_INT_vect_Z);
-	nvic_clear_pending_irq(NVIC_EXTI0_IRQ);
-
 	/* Enable SW_DEBOUNCE_TIMER clock. */
 	rcc_periph_clock_enable(SW_DEBOUNCE_TIMER_RCC);
 	timer_reset(SW_DEBOUNCE_TIMER);
@@ -235,27 +232,22 @@ void exti0_isr()
 	nvic_enable_irq(SW_DEBOUNCE_TIMER_IRQ);
     timer_enable_counter(SW_DEBOUNCE_TIMER); /* Counter enable. */
 }
+
+void exti0_isr()
+{
+    /* Clear interrupt request */
+	exti_reset_request(LIMIT_INT_vect_Z);
+	nvic_clear_pending_irq(NVIC_EXTI0_IRQ);
+
+    enable_debounce_timer();
+}
 void exti9_5_isr()
 {
 	/* Clear interrupt request */
 	exti_reset_request(LIMIT_INT_vect);
 	nvic_clear_pending_irq(NVIC_EXTI9_5_IRQ);
 
-	/* Enable SW_DEBOUNCE_TIMER clock. */
-	rcc_periph_clock_enable(SW_DEBOUNCE_TIMER_RCC);
-	timer_reset(SW_DEBOUNCE_TIMER);
-	/* Continous mode. */
-	timer_continuous_mode(SW_DEBOUNCE_TIMER);
-	timer_set_mode(SW_DEBOUNCE_TIMER, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
-    /* ARR reload enable. */
-    timer_enable_preload(SW_DEBOUNCE_TIMER);
-    timer_set_prescaler(SW_DEBOUNCE_TIMER, (256*PSC_MUL_FACTOR)-1);// set to 1/8 Prescaler
-	timer_set_period(SW_DEBOUNCE_TIMER, 0X09FF);
-
-    /* Enable SW_DEBOUNCE_TIMER Stepper Driver Interrupt. */
-    timer_enable_irq(SW_DEBOUNCE_TIMER, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
-	nvic_enable_irq(SW_DEBOUNCE_TIMER_IRQ);
-    timer_enable_counter(SW_DEBOUNCE_TIMER); /* Counter enable. */
+    enable_debounce_timer();
 }
 
 void SW_DEBOUNCE_TIMER_ISR()
@@ -340,16 +332,19 @@ void limits_go_home(uint8_t cycle_mask)
       if (bit_istrue(cycle_mask,bit(idx))) {
         n_active_axis++;
         #ifdef COREXY
+        if (!approach)
+        {
           if (idx == X_AXIS) {
-            int32_t axis_position = system_convert_corexy_to_y_axis_steps(sys.position);
+            int32_t axis_position = (bit_istrue(settings.dir_invert_mask,bit(Y_AXIS)) ? -1 : 1) * system_convert_corexy_to_y_axis_steps(sys.position);
             sys.position[A_MOTOR] = axis_position;
             sys.position[B_MOTOR] = -axis_position;
           } else if (idx == Y_AXIS) {
-            int32_t axis_position = system_convert_corexy_to_x_axis_steps(sys.position);
+            int32_t axis_position = (bit_istrue(settings.dir_invert_mask,bit(X_AXIS)) ? -1 : 1) * system_convert_corexy_to_x_axis_steps(sys.position);
             sys.position[A_MOTOR] = sys.position[B_MOTOR] = axis_position;
           } else { 
             sys.position[Z_AXIS] = 0; 
           }
+        }
         #else
         sys.position[idx] = 0;
         #endif
@@ -385,6 +380,13 @@ void limits_go_home(uint8_t cycle_mask)
       if (approach) {
         // Check limit state. Lock out cycle axes when they change.
         limit_state = limits_get_state();
+#ifdef ENABLE_SOFTWARE_DEBOUNCE
+        if (limit_state != 0)
+        {
+        	enable_debounce_timer();
+        	limit_state = limits_get_state();
+        }
+#endif
         for (idx=0; idx<N_AXIS; idx++) {
           if (axislock & step_pin[idx]) {
             if (limit_state & (1 << idx)) { 
@@ -465,12 +467,12 @@ void limits_go_home(uint8_t cycle_mask)
       #ifdef COREXY
         if (idx==X_AXIS) { 
           int32_t off_axis_position = system_convert_corexy_to_y_axis_steps(sys.position);
-          sys.position[A_MOTOR] = set_axis_position + off_axis_position;
-          sys.position[B_MOTOR] = set_axis_position - off_axis_position;          
+          sys.position[A_MOTOR] = (bit_istrue(settings.dir_invert_mask,bit(X_AXIS)) ? -1 : 1) * (set_axis_position) + (bit_istrue(settings.dir_invert_mask,bit(Y_AXIS)) ? -1 : 1) * (off_axis_position);
+          sys.position[B_MOTOR] = (bit_istrue(settings.dir_invert_mask,bit(X_AXIS)) ? -1 : 1) * (set_axis_position) - (bit_istrue(settings.dir_invert_mask,bit(Y_AXIS)) ? -1 : 1) * (off_axis_position);
         } else if (idx==Y_AXIS) {
           int32_t off_axis_position = system_convert_corexy_to_x_axis_steps(sys.position);
-          sys.position[A_MOTOR] = off_axis_position + set_axis_position;
-          sys.position[B_MOTOR] = off_axis_position - set_axis_position;
+          sys.position[A_MOTOR] = (bit_istrue(settings.dir_invert_mask,bit(X_AXIS)) ? -1 : 1) * (off_axis_position) + (bit_istrue(settings.dir_invert_mask,bit(Y_AXIS)) ? -1 : 1) * (set_axis_position);
+          sys.position[B_MOTOR] = (bit_istrue(settings.dir_invert_mask,bit(X_AXIS)) ? -1 : 1) * (off_axis_position) - (bit_istrue(settings.dir_invert_mask,bit(Y_AXIS)) ? -1 : 1) * (set_axis_position);
         } else {
           sys.position[idx] = set_axis_position;
         }        

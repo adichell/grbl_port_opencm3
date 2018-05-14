@@ -381,10 +381,6 @@ ISR(TIMER1_COMPA_vect)
   busy = true;
   #ifdef NUCLEO
   __enable_irq(); // Global enable interrupts
-  //equivalent to
-  //asm("CPSIE I ;"); //Enable IRQ by clearing PRIMASK
-  //opposite would be:
-  //__disable_irq(); // Global disable interrupts
   #else
   sei(); // Re-enable interrupts to allow Stepper Port Reset Interrupt to fire on-time. 
          // NOTE: The remaining code in this ISR will finish before returning to main program.
@@ -424,7 +420,11 @@ ISR(TIMER1_COMPA_vect)
         // Initialize Bresenham line and distance counters
         st.counter_x = st.counter_y = st.counter_z = (st.exec_block->step_event_count >> 1);
       }
+#ifdef COREXY
+      st.dir_outbits = st.exec_block->direction_bits;
+#else
       st.dir_outbits = st.exec_block->direction_bits ^ dir_port_invert_mask;
+#endif
 
       #ifdef ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING
         // With AMASS enabled, adjust Bresenham axis increment counters according to AMASS level.
