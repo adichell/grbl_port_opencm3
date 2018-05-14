@@ -34,6 +34,9 @@
 // Default settings. Used when resetting EEPROM. Change to desired name in defaults.h
 #define DEFAULTS_GENERIC
 
+// Default pwm spindle parameters. Used when resetting EEPROM. Change to desired name in pwm_spindle_params.h
+#define PWM_SPINDLE_PARAMS_GENERIC
+
 // Serial baud rate
 #define BAUD_RATE 115200
 
