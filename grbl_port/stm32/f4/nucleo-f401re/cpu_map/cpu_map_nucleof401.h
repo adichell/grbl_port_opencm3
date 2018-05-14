@@ -26,6 +26,8 @@
 #include <libopencm3/stm32/flash.h>
 #include <libopencm3/stm32/timer.h>
 
+//#define TEST_NUCLEO_EXTI_PINS
+
 //#define BASIC_CPU_SPEED
 #ifdef BASIC_CPU_SPEED
 #define F_CPU (16000000)
@@ -179,7 +181,7 @@
 #define LIMIT_Z_EXTI              EXTI0
 
 #define LIMIT_MASK                (LIMIT_X_MASK | LIMIT_Y_MASK | LIMIT_Z_MASK)
-#define INVERT_LIMIT_PIN_MASK     (LIMIT_MASK)
+//#define INVERT_LIMIT_PIN_MASK     (LIMIT_MASK)
 
 /* Interrupt defines for LIMIT PINS */
 #define LIMIT_INT                 NVIC_EXTI9_5_IRQ  // Pin change interrupt enable pin

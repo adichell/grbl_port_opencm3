@@ -42,6 +42,7 @@ COMMON_SRCS := coolant_control.c \
                protocol.c \
                planner.c \
                probe.c \
+               test_nucleo.c \
                spindle_control.c 
 
 LDSCRIPT = ./nucleo-f401re_ramcode.ld

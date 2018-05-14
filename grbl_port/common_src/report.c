@@ -199,8 +199,11 @@ void report_grbl_settings() {
     printPgmString(PSTR("\r\n$23=")); print_uint8_base10(settings.homing_dir_mask);
     printPgmString(PSTR("\r\n$24=")); printFloat_SettingValue(settings.homing_feed_rate);
     printPgmString(PSTR("\r\n$25=")); printFloat_SettingValue(settings.homing_seek_rate);
-    printPgmString(PSTR("\r\n$26=")); print_uint8_base10(settings.homing_debounce_delay);
+    printPgmString(PSTR("\r\n$26=")); print_uint32_base10(settings.homing_debounce_delay);
     printPgmString(PSTR("\r\n$27=")); printFloat_SettingValue(settings.homing_pulloff);
+    printPgmString(PSTR("\r\n$28=")); print_uint32_base10(settings.spindle_pwm_period);
+    printPgmString(PSTR("\r\n$29=")); print_uint32_base10(settings.spindle_pwm_max_time_on);
+    printPgmString(PSTR("\r\n$30=")); print_uint32_base10(settings.spindle_pwm_min_time_on);
     printPgmString(PSTR("\r\n"));
   #else      
     printPgmString(PSTR("$0=")); print_uint8_base10(settings.pulse_microseconds);
@@ -224,9 +227,12 @@ void report_grbl_settings() {
     printPgmString(PSTR(" (homing dir invert mask:")); print_uint8_base2(settings.homing_dir_mask);  
     printPgmString(PSTR(")\r\n$24=")); printFloat_SettingValue(settings.homing_feed_rate);
     printPgmString(PSTR(" (homing feed, mm/min)\r\n$25=")); printFloat_SettingValue(settings.homing_seek_rate);
-    printPgmString(PSTR(" (homing seek, mm/min)\r\n$26=")); print_uint8_base10(settings.homing_debounce_delay);
+    printPgmString(PSTR(" (homing seek, mm/min)\r\n$26=")); print_uint32_base10(settings.homing_debounce_delay);
     printPgmString(PSTR(" (homing debounce, msec)\r\n$27=")); printFloat_SettingValue(settings.homing_pulloff);
-    printPgmString(PSTR(" (homing pull-off, mm)\r\n"));
+    printPgmString(PSTR(" (homing pull-off, mm)\r\n$28=")); print_uint32_base10(settings.spindle_pwm_period);
+    printPgmString(PSTR(" (Spindle pwm period, us)\r\n$29=")); print_uint32_base10(settings.spindle_pwm_max_time_on);
+    printPgmString(PSTR(" (Spindle pwm Max time-on, us)\r\n$30=")); print_uint32_base10(settings.spindle_pwm_min_time_on);
+    printPgmString(PSTR(" (Spindle pwm min time-on, us)\r\n"));
   #endif
   
   // Print axis settings

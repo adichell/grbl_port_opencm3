@@ -131,6 +131,10 @@ typedef struct {
   float homing_seek_rate;
   uint16_t homing_debounce_delay;
   float homing_pulloff;
+
+  uint32_t spindle_pwm_period;
+  uint32_t spindle_pwm_max_time_on;
+  uint32_t spindle_pwm_min_time_on;
 } settings_t;
 extern settings_t settings;
 

@@ -128,7 +128,13 @@ uint8_t limits_get_state()
   if (pin) {  
     uint8_t idx;
     for (idx=0; idx<N_AXIS; idx++) {
-      if (pin & get_limit_pin_mask(idx)) { limit_state |= (1 << idx); }
+      if (pin & get_limit_pin_mask(idx))
+      {
+    	  limit_state |= (1 << idx);
+#ifdef TEST_NUCLEO_EXTI_PINS
+          test_led_toggle();
+#endif
+      }
     }
   }
   return(limit_state);

@@ -190,6 +190,10 @@ void settings_restore(uint8_t restore_flag) {
     settings.homing_debounce_delay = DEFAULT_HOMING_DEBOUNCE_DELAY;
     settings.homing_pulloff = DEFAULT_HOMING_PULLOFF;
 
+    settings.spindle_pwm_period = DEFAULT_SPINDLE_PWM_PERIOD;
+    settings.spindle_pwm_max_time_on = DEFAULT_SPINDLE_PWM_MAX_TIME_ON;
+    settings.spindle_pwm_min_time_on = DEFAULT_SPINDLE_PWM_MIN_TIME_ON;
+
     settings.flags = 0;
     if (DEFAULT_REPORT_INCHES) { settings.flags |= BITFLAG_REPORT_INCHES; }
     if (DEFAULT_INVERT_ST_ENABLE) { settings.flags |= BITFLAG_INVERT_ST_ENABLE; }
@@ -406,6 +410,8 @@ uint8_t settings_store_global_setting(uint8_t parameter, float value) {
   } else {
     // Store non-axis Grbl settings
     uint8_t int_value = trunc(value);
+    uint16_t int_value16 = trunc(value);
+    uint32_t int_value32 = trunc(value);
     switch(parameter) {
       case 0: 
         if (int_value < 3) { return(STATUS_SETTING_STEP_PULSE_MIN); }
@@ -459,8 +465,11 @@ uint8_t settings_store_global_setting(uint8_t parameter, float value) {
       case 23: settings.homing_dir_mask = int_value; break;
       case 24: settings.homing_feed_rate = value; break;
       case 25: settings.homing_seek_rate = value; break;
-      case 26: settings.homing_debounce_delay = int_value; break;
+      case 26: settings.homing_debounce_delay = int_value16; break;
       case 27: settings.homing_pulloff = value; break;
+      case 28: settings.spindle_pwm_period = int_value32; break;
+      case 29: settings.spindle_pwm_max_time_on = int_value32; break;
+      case 30: settings.spindle_pwm_min_time_on = int_value32; break;
       default: 
         return(STATUS_INVALID_STATEMENT);
     }

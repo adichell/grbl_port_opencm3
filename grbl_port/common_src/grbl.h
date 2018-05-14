@@ -51,6 +51,7 @@
 #include "settings.h"
 #include "system.h"
 #include "defaults.h"
+#include "pwm_spindle_params.h"
 #include "coolant_control.h"
 
 #include "gcode.h"

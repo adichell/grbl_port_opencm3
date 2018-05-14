@@ -32,7 +32,10 @@
 
 
 // Default settings. Used when resetting EEPROM. Change to desired name in defaults.h
-#define DEFAULTS_GENERIC
+#define DEFAULTS_CPCB
+
+// Default pwm spindle parameters. Used when resetting EEPROM. Change to desired name in pwm_spindle_params.h
+#define PWM_SPINDLE_PARAMS_GENERIC
 
 // Serial baud rate
 #define BAUD_RATE 115200
@@ -74,8 +77,16 @@
 // on separate pin, but homed in one cycle. Also, it should be noted that the function of hard limits 
 // will not be affected by pin sharing.
 // NOTE: Defaults are set for a traditional 3-axis CNC machine. Z-axis first to clear, followed by X & Y.
-#define HOMING_CYCLE_0 (1<<Z_AXIS)                // REQUIRED: First move Z to clear workspace.
-#define HOMING_CYCLE_1 ((1<<X_AXIS)|(1<<Y_AXIS))  // OPTIONAL: Then move X,Y at the same time.
+//#define HOMING_CYCLE_0 (1<<Z_AXIS)                // REQUIRED: First move Z to clear workspace.
+//#define HOMING_CYCLE_1 ((1<<X_AXIS)|(1<<Y_AXIS))  // OPTIONAL: Then move X,Y at the same time.
+
+#define HOMING_CYCLE_0 (1<<Z_AXIS)
+#define HOMING_CYCLE_1 (1<<X_AXIS)                // COREXY REQUIRED: First move x.
+#define HOMING_CYCLE_2 (1<<Y_AXIS)                // COREXY REQUIRED: Then move Y.
+
+//#define HOMING_CYCLE_0 (1<<X_AXIS)                // COREXY REQUIRED: First move x.
+//#define HOMING_CYCLE_1 (1<<Y_AXIS)                // COREXY REQUIRED: Then move Y.
+
 // #define HOMING_CYCLE_2                         // OPTIONAL: Uncomment and add axes mask to enable
 
 // Number of homing cycles performed after when the machine initially jogs to limit switches.
@@ -381,7 +392,7 @@
 // electrical interference on the signal cables from external sources. It's recommended to first
 // use shielded signal cables with their shielding connected to ground (old USB/computer cables 
 // work well and are cheap to find) and wire in a low-pass circuit into each limit pin.
-// #define ENABLE_SOFTWARE_DEBOUNCE // Default disabled. Uncomment to enable.
+ #define ENABLE_SOFTWARE_DEBOUNCE // Default disabled. Uncomment to enable.
 
 // Force Grbl to check the state of the hard limit switches when the processor detects a pin
 // change inside the hard limit ISR routine. By default, Grbl will trigger the hard limits
