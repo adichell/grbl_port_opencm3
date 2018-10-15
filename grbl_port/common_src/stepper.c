@@ -623,7 +623,7 @@ void stepper_init()
        by Auto-Reload feature in normal upcounting mode */
     /* Enable STEPPER_MAIN_TIMER clock. */
     rcc_periph_clock_enable(MAIN_TIMER_RCC);
-    timer_reset(STEPPER_MAIN_TIMER);
+    rcc_periph_reset_pulse(MAIN_TIMER_RST);
     /* Continous mode. */
     timer_continuous_mode(STEPPER_MAIN_TIMER);
     /* Timer global mode:
@@ -651,7 +651,7 @@ void stepper_init()
     /* Interrupt by overflow shall be used */
     /* Enable STEPPER_PULSE_TIMER clock. */
     rcc_periph_clock_enable(PULSE_TIMER_RCC);
-    timer_reset(STEPPER_PULSE_TIMER);
+    rcc_periph_reset_pulse(PULSE_TIMER_RST);
     /* Timer global mode:
      * - No divider
      * - Alignment edge

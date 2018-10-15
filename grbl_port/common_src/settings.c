@@ -57,12 +57,12 @@ void write_global_settings()
 }
 
 
-// Method to store coord data parameters into EEPROM
+// Method to store coord data parameters into EFLASH
 void settings_write_coord_data(uint8_t coord_select, float *coord_data)
 {
   uint32_t addr = coord_select*(sizeof(float)*(N_AXIS+1)) + EFLASH_ADDR_PARAMETERS_MAIN;
   uint32_t addr_copy = coord_select*(sizeof(float)*(N_AXIS+1)) + EFLASH_ADDR_PARAMETERS_COPY;
-  uint32_t status = flash_verify_erase_need((char *) addr, (char*)coord_data, ((unsigned int)sizeof(float)*(N_AXIS+1)));
+  uint32_t status = flash_verify_erase_need((char *) addr, (char*)coord_data, ((unsigned int)sizeof(float)*N_AXIS));
 
   if (status == 0)
   {
@@ -193,6 +193,7 @@ void settings_restore(uint8_t restore_flag) {
     settings.spindle_pwm_period = DEFAULT_SPINDLE_PWM_PERIOD;
     settings.spindle_pwm_max_time_on = DEFAULT_SPINDLE_PWM_MAX_TIME_ON;
     settings.spindle_pwm_min_time_on = DEFAULT_SPINDLE_PWM_MIN_TIME_ON;
+    settings.spindle_pwm_enable_at_start = DEFAULT_SPINDLE_PWM_ENABLE_AT_START;
 
     settings.flags = 0;
     if (DEFAULT_REPORT_INCHES) { settings.flags |= BITFLAG_REPORT_INCHES; }
@@ -470,6 +471,7 @@ uint8_t settings_store_global_setting(uint8_t parameter, float value) {
       case 28: settings.spindle_pwm_period = int_value32; break;
       case 29: settings.spindle_pwm_max_time_on = int_value32; break;
       case 30: settings.spindle_pwm_min_time_on = int_value32; break;
+      case 31: settings.spindle_pwm_enable_at_start = int_value32; break;
       default: 
         return(STATUS_INVALID_STATEMENT);
     }

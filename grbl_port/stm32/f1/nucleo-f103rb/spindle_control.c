@@ -46,7 +46,7 @@ void spindle_init()
   
     /* Enable SPINDLE_TIMER clock. */
     rcc_periph_clock_enable(SPINDLE_TIMER_RCC);
-    timer_reset(SPINDLE_TIMER);
+    rcc_periph_reset_pulse(SPINDLE_TIMER_RST);
     /* Continous mode. */
     timer_continuous_mode(SPINDLE_TIMER);
     /* Timer global mode:

@@ -26,7 +26,7 @@ SRC_DIR ?= ./
 COMMON_SRC_DIR ?= ../../../common_src/
 MKDIR_P = mkdir -p
 
-SRCS := reset_vector.c flash.c serial.c spindle_control.c settings.c
+SRCS := reset_vector.c flash.c serial.c settings.c
         
 COMMON_SRCS := coolant_control.c \
                nuts_bolts.c \
@@ -39,7 +39,8 @@ COMMON_SRCS := coolant_control.c \
                motion_control.c \
                protocol.c \
                planner.c \
-               probe.c 
+               probe.c \
+               spindle_control.c
                 
 
 LDSCRIPT = ./nucleo-f103rb_ramcode.ld

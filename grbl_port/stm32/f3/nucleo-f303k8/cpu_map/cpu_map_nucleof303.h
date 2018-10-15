@@ -1,5 +1,5 @@
 /*
-  cpu_map_nucleof103.h - CPU and pin mapping configuration file for NUCLEO F103 board.
+  cpu_map_nucleoF303.h - CPU and pin mapping configuration file for NUCLEO F303 board.
   Part of grbl_port_opencm3 project.
 
   Copyright (c) 2017 Angelo Di Chello
@@ -18,15 +18,12 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* This cpu_map file serves as a central pin mapping settings file for ST Nucleo F103 */
+/* This cpu_map file serves as a central pin mapping settings file for ST Nucleo F303 */
 
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/exti.h>
 #include <libopencm3/stm32/flash.h>
-#include <libopencm3/stm32/timer.h>
-
-//#define TEST_NUCLEO_EXTI_PINS
 
 //#define BASIC_CPU_SPEED
 #ifdef BASIC_CPU_SPEED
@@ -41,7 +38,7 @@
 #error "cpu_map already defined: GRBL_PLATFORM=" GRBL_PLATFORM
 #endif
 
-#define GRBL_PLATFORM "NucleoF103"
+#define GRBL_PLATFORM "NucleoF303"
 
 #define NUCLEO // Nucleo
 //#define USE_RX_DMA
@@ -70,23 +67,19 @@
 #define MAIN_TIMER_ISR         tim4_isr
 #define MAIN_TIMER_RCC         RCC_TIM4
 #define MAIN_TIMER_IRQ         NVIC_TIM4_IRQ
-#define MAIN_TIMER_RST         RST_TIM4
 
 #define STEPPER_PULSE_TIMER    TIM2
 #define PULSE_TIMER_ISR        tim2_isr
 #define PULSE_TIMER_IRQ        NVIC_TIM2_IRQ
 #define PULSE_TIMER_RCC        RCC_TIM2
-#define PULSE_TIMER_RST         RST_TIM2
 
 #define SW_DEBOUNCE_TIMER      TIM5
 #define SW_DEBOUNCE_TIMER_RCC  RCC_TIM5
 #define SW_DEBOUNCE_TIMER_IRQ  NVIC_TIM5_IRQ
 #define SW_DEBOUNCE_TIMER_ISR  tim5_isr
-#define SW_DEBOUNCE_TIMER_RST  RST_TIM5
 
 #define SPINDLE_TIMER          TIM3
 #define SPINDLE_TIMER_RCC      RCC_TIM3
-#define SPINDLE_TIMER_RST      RST_TIM3
 #define SPINDLE_TIMER_CHAN     TIM_OC1
 #define SPINDLE_TIMER_PWM_TYPE TIM_OCM_PWM1
 #define SPINDLE_GPIO_GROUP     GPIOA
@@ -113,7 +106,7 @@
 // Define step pulse output pins. NOTE: All step bit pins must be on the same port.
 #define STEP_X_DDR        GPIOA_CRH
 #define STEP_X_PORT       GPIOA_ODR
-#define X_STEP_BIT        10 // NucleoF103 Digital PA10
+#define X_STEP_BIT        10 // NucleoF303 Digital PA10
 #define X_STEP_BIT_REL    2
 #define STEP_MASK_X_DDR   (0x00000001<<(X_STEP_BIT_REL*4 + 2)) // All (step bits*4 + 2) because the direction/mode has 2 bits
 #define STEP_X_DDR_RESET_MASK   (0x00000003<<(X_STEP_BIT_REL*4 + 2))
@@ -121,8 +114,8 @@
 
 #define STEP_YZ_DDR       GPIOB_CRL
 #define STEP_YZ_PORT      GPIOB_ODR
-#define Y_STEP_BIT        3 // NucleoF103 Digital PB3
-#define Z_STEP_BIT        5 // NucleoF103 Digital PB5
+#define Y_STEP_BIT        3 // NucleoF303 Digital PB3
+#define Z_STEP_BIT        5 // NucleoF303 Digital PB5
 #define STEP_MASK_YZ_DDR  ((0x00000001<<(Y_STEP_BIT*4 + 2))|(0x00000001<<(Z_STEP_BIT*4 + 2))) // All (step bits*4 + 2) because the direction/mode has 2 bits
 #define STEP_YZ_DDR_RESET_MASK  ((0x00000003<<(Y_STEP_BIT*4 + 2))|(0x00000003<<(Z_STEP_BIT*4 + 2)))
 #define STEP_MASK_YZ      ((0x00000001<<Y_STEP_BIT)|(0x00000001<<Z_STEP_BIT))         // Y-Z step mask bits
@@ -130,7 +123,7 @@
 // Define step direction output pins. NOTE: All direction pins must be on the same port.
 #define DIRECTION_Z_DDR       GPIOA_CRH
 #define DIRECTION_Z_PORT      GPIOA_ODR
-#define Z_DIRECTION_BIT       8   // NucleoF103 Digital PA8
+#define Z_DIRECTION_BIT       8   // NucleoF303 Digital PA8
 #define Z_DIRECTION_BIT_REL   0
 #define DIRECTION_MASK_Z_DDR  (0x00000001<<(Z_DIRECTION_BIT_REL*4 + 2)) // Z DIR Mask direction bits
 #define DIRECTION_Z_DDR_RESET_MASK  (0x00000003<<(Z_DIRECTION_BIT_REL*4 + 2)) // Z DIR Mask direction bits
@@ -139,8 +132,8 @@
 #define DIRECTION_X_DDR       GPIOB_CRL
 #define DIRECTION_Y_DDR       GPIOB_CRH
 #define DIRECTION_XY_PORT      GPIOB_ODR
-#define X_DIRECTION_BIT        4  // NucleoF103 Digital PB4
-#define Y_DIRECTION_BIT        10 // NucleoF103 Digital PB10
+#define X_DIRECTION_BIT        4  // NucleoF303 Digital PB4
+#define Y_DIRECTION_BIT        10 // NucleoF303 Digital PB10
 #define Y_DIRECTION_BIT_REL    2
 #define DIRECTION_MASK_XY_DDR  ((0x00000001<<(X_DIRECTION_BIT*4 + 2))|(0x00000001<<(Y_DIRECTION_BIT_REL*4 + 2))) // All direction bits
 #define DIRECTION_MASK_X_DDR   (0x00000001<<(X_DIRECTION_BIT*4 + 2)) // All direction bits
@@ -153,7 +146,7 @@
 // Define stepper driver enable/disable output pin.
 #define STEPPERS_DISABLE_DDR        GPIOA_CRH
 #define STEPPERS_DISABLE_PORT       GPIOA_ODR
-#define STEPPERS_DISABLE_BIT        9                             // NucleoF103 Digital PA9
+#define STEPPERS_DISABLE_BIT        9                             // NucleoF303 Digital PA9
 #define STEPPERS_DISABLE_BIT_REL    1
 #define STEPPERS_DISABLE_MASK_DDR   (0x00000001<<(STEPPERS_DISABLE_BIT_REL*4 + 2))
 #define STEPPERS_DISABLE_MASK       (0x00000001<<STEPPERS_DISABLE_BIT)
@@ -165,7 +158,7 @@
 #define LIMIT_X_PORT             GPIOC_ODR
 #define LIMIT_X_PIN              GPIOC_IDR
 #define LIMIT_X_PU               GPIOC_ODR
-#define X_LIMIT_BIT              7                     // NucleoF103 Digital PC7
+#define X_LIMIT_BIT              7                     // NucleoF303 Digital PC7
 #define LIMIT_X_PU_MASK          (0x00000001<<X_LIMIT_BIT)     // X limit pull-up mask
 #define LIMIT_X_PU_RESET_MASK    LIMIT_X_PU_MASK        // X limit pull-up reset mask
 #define LIMIT_X_DDR_RESET_MASK   (0x00000003<<(X_LIMIT_BIT*4 + 2)) // X limit dir mask
@@ -177,7 +170,7 @@
 #define LIMIT_Y_PORT             GPIOB_ODR
 #define LIMIT_Y_PIN              GPIOB_IDR
 #define LIMIT_Y_PU               GPIOB_ODR
-#define Y_LIMIT_BIT              6                        // NucleoF103 Digital PB6
+#define Y_LIMIT_BIT              6                        // NucleoF303 Digital PB6
 #define LIMIT_Y_PU_MASK          (0x00000001<<Y_LIMIT_BIT)       // Y limit pull-up mask
 #define LIMIT_Y_PU_RESET_MASK    LIMIT_Y_PU_MASK          // Y limit pull-up reset mask
 #define LIMIT_Y_DDR_RESET_MASK   ((0x00000003<<(Y_LIMIT_BIT*4 + 2))) // Y limit dir mask
@@ -189,7 +182,7 @@
 #define LIMIT_Z_PORT             GPIOB_ODR
 #define LIMIT_Z_PIN              GPIOB_IDR
 #define LIMIT_Z_PU               GPIOB_ODR
-#define Z_LIMIT_BIT              0                        // NucleoF103 Digital PB0
+#define Z_LIMIT_BIT              0                        // NucleoF303 Digital PB0
 #define LIMIT_Z_PU_MASK          (0x00000001<<Z_LIMIT_BIT)       // Z limit pull-up mask
 #define LIMIT_Z_PU_RESET_MASK    LIMIT_Z_PU_MASK          // Z limit pull-up reset mask
 #define LIMIT_Z_DDR_RESET_MASK   ((0x00000003<<(Z_LIMIT_BIT*4 + 2))) // Z limit dir mask
@@ -215,7 +208,7 @@
 #define RESET_CONTROL_PORT              GPIOB_ODR
 #define RESET_CONTROL_PIN               GPIOB_IDR
 #define RESET_CONTROL_PU                GPIOB_ODR
-#define RESET_BIT                       2                     // NucleoF103 Digital PB2
+#define RESET_BIT                       2                     // NucleoF303 Digital PB2
 #define RESET_CONTROL_PU_MASK           (0x00000001<<RESET_BIT)      // Reset pull-up mask
 #define RESET_CONTROL_PU_RESET_MASK     RESET_CONTROL_PU_MASK // Reset dir mask
 #define RESET_CONTROL_DDR_RESET_MASK    (0x00000003<<(RESET_BIT*4 + 2))  // Reset dir mask
@@ -230,7 +223,7 @@
 #define FEED_HOLD_CONTROL_PORT          GPIOA_ODR
 #define FEED_HOLD_CONTROL_PIN           GPIOA_IDR
 #define FEED_HOLD_CONTROL_PU            GPIOA_ODR
-#define FEED_HOLD_BIT                   1                        // NucleoF103 Digital PA1
+#define FEED_HOLD_BIT                   1                        // NucleoF303 Digital PA1
 #define FEED_HOLD_PU_MASK               (0x00000001<<FEED_HOLD_BIT)     // Feed Hold pull-up mask
 #define FEED_HOLD_PU_RESET_MASK         FEED_HOLD_PU_MASK        // Feed Hold pull-up reset mask
 #define FEED_HOLD_DDR_RESET_MASK        (0x00000003<<(FEED_HOLD_BIT*4 + 2)) // Feed Hold DDR reset mask
@@ -245,7 +238,7 @@
 #define CYCLE_START_CONTROL_PORT        GPIOA_ODR
 #define CYCLE_START_CONTROL_PIN         GPIOA_IDR
 #define CYCLE_START_CONTROL_PU          GPIOA_ODR
-#define CYCLE_START_BIT                 4                          // NucleoF103 Digital PA4
+#define CYCLE_START_BIT                 4                          // NucleoF303 Digital PA4
 #define CYCLE_START_PU_MASK             (0x00000001<<CYCLE_START_BIT)     // CYCLE_START pull-up mask
 #define CYCLE_START_PU_RESET_MASK       CYCLE_START_PU_MASK        // CYCLE_START pull-up reset mask
 #define CYCLE_START_DDR_RESET_MASK      (0x00000003<<(CYCLE_START_BIT*4 + 2)) // CYCLE_START dir reset mask
@@ -260,7 +253,7 @@
 #define SAFETY_DOOR_CONTROL_PORT          GPIOC_ODR
 #define SAFETY_DOOR_CONTROL_PIN           GPIOC_IDR
 #define SAFETY_DOOR_CONTROL_PU            GPIOC_ODR
-#define SAFETY_DOOR_BIT                   3 // NucleoF103 Digital PC3
+#define SAFETY_DOOR_BIT                   3 // NucleoF303 Digital PC3
 #define SAFETY_DOOR_PU_MASK               (0x00000001<<SAFETY_DOOR_BIT) // SAFETY_DOOR pull-up mask
 #define SAFETY_DOOR_PU_RESET_MASK         SAFETY_DOOR_PU_MASK // SAFETY_DOOR pull-up reset mask
 #define SAFETY_DOOR_DDR_RESET_MASK        (0x00000003<<(SAFETY_DOOR_BIT*4 + 2)) // SAFETY_DOOR DDR reset mask
@@ -281,24 +274,25 @@
 #define PROBE_PIN            GPIOC_IDR
 #define PROBE_PORT           GPIOC_ODR
 #define PROBE_PU             GPIOC_ODR
-#define PROBE_BIT            0                    // NucleoF103 Digital PC0
+#define PROBE_BIT            0                    // NucleoF303 Digital PC0
 #define PROBE_PU_MASK        (0x00000001<<PROBE_BIT)     // Probe pull-up mask
 #define PROBE_PU_RESET_MASK  PROBE_PU_MASK        // Probe pull-up reset mask
-#define PROBE_DDR_RESET_MASK (0x00000003<<(PROBE_BIT*4 + 2)) // Probe dir reset mask
+#define PROBE_DDR_RESET_MASK (0x0000000F<<(PROBE_BIT*4)) // Probe dir reset mask
+#define PROBE_DDR_SET_MASK   (0x00000008<<(PROBE_BIT*4)) // Probe dir set mask
 #define PROBE_MASK           (0x00000001<<PROBE_BIT)
 
 
 // Define spindle enable and spindle direction output pins.
 #define SPINDLE_ENABLE_DDR               GPIOA_CRL
 #define SPINDLE_ENABLE_PORT              GPIOA_ODR
-#define SPINDLE_ENABLE_BIT               6 // NucleoF103 Digital Pin 6
+#define SPINDLE_ENABLE_BIT               6 // NucleoF303 Digital Pin 6
 #define SPINDLE_ENABLE_MASK_DDR          (0x00000001<<(SPINDLE_ENABLE_BIT*4 + 2)) // All (step bits*4 + 2) because the direction/mode has 2 bits
 #define SPINDLE_ENABLE_DDR_RESET_MASK    (0x00000003<<(SPINDLE_ENABLE_BIT*4 + 2))
 #define SPINDLE_ENABLE_MASK              (0x00000001<<SPINDLE_ENABLE_BIT)     // SPINDLE_ENABLE mask bit
 
 #define SPINDLE_DIRECTION_DDR               GPIOA_CRL
 #define SPINDLE_DIRECTION_PORT              GPIOA_ODR
-#define SPINDLE_DIRECTION_BIT               5 // NucleoF103 Digital Pin 5
+#define SPINDLE_DIRECTION_BIT               5 // NucleoF303 Digital Pin 5
 #define SPINDLE_DIRECTION_MASK_DDR          (0x00000001<<(SPINDLE_DIRECTION_BIT*4 + 2)) // All (step bits*4 + 2) because the direction/mode has 2 bits
 #define SPINDLE_DIRECTION_DDR_RESET_MASK    (0x00000003<<(SPINDLE_DIRECTION_BIT*4 + 2))
 #define SPINDLE_DIRECTION_MASK              (0x00000001<<SPINDLE_DIRECTION_BIT)     // SPINDLE_DIRECTION_BIT mask bit
@@ -320,7 +314,7 @@
 
   #define SPINDLE_PWM_DDR               GPIOA_CRL
   #define SPINDLE_PWM_PORT              GPIOA_ODR
-  #define SPINDLE_PWM_BIT               6 // NucleoF103 Digital Pin 6
+  #define SPINDLE_PWM_BIT               6 // NucleoF303 Digital Pin 6
   #define SPINDLE_PWM_MASK_DDR          (0x00000001<<(SPINDLE_PWM_BIT*4 + 2)) // All (step bits*4 + 2) because the direction/mode has 2 bits
   #define SPINDLE_PWM_DDR_RESET_MASK    (0x00000003<<(SPINDLE_PWM_BIT*4 + 2))
   #define SPINDLE_PWM_MASK              (0x00000001<<SPINDLE_PWM_BIT)     // SPINDLE_PWM mask bit
@@ -329,14 +323,14 @@
 // Define flood and mist coolant enable output pins.
 #define COOLANT_FLOOD_DDR               GPIOC_CRL
 #define COOLANT_FLOOD_PORT              GPIOC_ODR
-#define COOLANT_FLOOD_BIT               1 // NucleoF103 Digital Pin 1
+#define COOLANT_FLOOD_BIT               1 // NucleoF303 Digital Pin 1
 #define COOLANT_FLOOD_DDR_MASK          (0x00000001<<(COOLANT_FLOOD_BIT*4 + 2)) // All (step bits*4 + 2) because the direction/mode has 2 bits
 #define COOLANT_FLOOD_DDR_RESET_MASK    (0x00000003<<(COOLANT_FLOOD_BIT*4 + 2))
 #define COOLANT_FLOOD_MASK              (0x00000001<<COOLANT_FLOOD_BIT)     // COOLANT_FLOOD mask bit
 #ifdef ENABLE_M7 // Mist coolant disabled by default. See config.h to enable/disable.
 #define COOLANT_MIST_DDR               GPIOC_CRL
 #define COOLANT_MIST_PORT              GPIOC_ODR
-#define COOLANT_MIST_BIT               2 // NucleoF103 Digital Pin 2
+#define COOLANT_MIST_BIT               2 // NucleoF303 Digital Pin 2
 #define COOLANT_MIST_DDR_MASK          (0x00000001<<(COOLANT_MIST_BIT*4 + 2)) // All (step bits*4 + 2) because the direction/mode has 2 bits
 #define COOLANT_MIST_DDR_RESET_MASK    (0x00000003<<(COOLANT_MIST_BIT*4 + 2))
 #define COOLANT_MIST_MASK              (0x00000001<<COOLANT_MIST_BIT)     // COOLANT_MIST mask bit
@@ -507,6 +501,7 @@
 #define SET_PROBE_DDR \
 do{ \
 	PROBE_DDR &= ~PROBE_DDR_RESET_MASK; \
+	PROBE_DDR |= PROBE_DDR_SET_MASK; \
 } while (0)
 
 /* unset pull-up for limits pin */
@@ -520,6 +515,7 @@ do{ \
 do{ \
 	PROBE_PU  &= ~PROBE_PU_RESET_MASK; \
 	PROBE_PU  |= PROBE_PU_MASK; \
+	PROBE_DDR |= (0x2 << ((PROBE_BIT*4) + 2)); \
 } while (0)
 
 #define SET_COOLANT_FLOOD_DDR \

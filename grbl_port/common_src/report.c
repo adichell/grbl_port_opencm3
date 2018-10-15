@@ -204,6 +204,7 @@ void report_grbl_settings() {
     printPgmString(PSTR("\r\n$28=")); print_uint32_base10(settings.spindle_pwm_period);
     printPgmString(PSTR("\r\n$29=")); print_uint32_base10(settings.spindle_pwm_max_time_on);
     printPgmString(PSTR("\r\n$30=")); print_uint32_base10(settings.spindle_pwm_min_time_on);
+    printPgmString(PSTR("\r\n$31=")); print_uint32_base10(settings.spindle_pwm_enable_at_start);
     printPgmString(PSTR("\r\n"));
   #else      
     printPgmString(PSTR("$0=")); print_uint8_base10(settings.pulse_microseconds);
@@ -232,6 +233,7 @@ void report_grbl_settings() {
     printPgmString(PSTR(" (homing pull-off, mm)\r\n$28=")); print_uint32_base10(settings.spindle_pwm_period);
     printPgmString(PSTR(" (Spindle pwm period, us)\r\n$29=")); print_uint32_base10(settings.spindle_pwm_max_time_on);
     printPgmString(PSTR(" (Spindle pwm Max time-on, us)\r\n$30=")); print_uint32_base10(settings.spindle_pwm_min_time_on);
+    printPgmString(PSTR(" (Spindle pwm Enabled at startup)\r\n$31=")); print_uint32_base10(settings.spindle_pwm_enable_at_start);
     printPgmString(PSTR(" (Spindle pwm min time-on, us)\r\n"));
   #endif
   

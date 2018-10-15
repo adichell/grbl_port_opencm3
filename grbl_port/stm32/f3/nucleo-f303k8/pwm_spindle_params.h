@@ -1,6 +1,6 @@
 /*
-  pwm_spindle_params_generic.h - pwm spindle default parameters configuration file
-  Part of grbl_port_opencm3 project, derived from the Grbl work.
+  pwm_spindle_params.h - pwm_spindle_params settings configuration file
+  Part of grbl_port_opencm3 project.
 
   Copyright (c) 2018 Angelo Di Chello
 
@@ -18,12 +18,19 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef PWM_SPINDLE_PARAMS_GENERIC_H
-#define PWM_SPINDLE_PARAMS_GENERIC_H
+/* The pwm_spindle_params.h file serves as a central pwm_spindle_params selector for different 
+   motor drives.
+   Ensure one and only one of these PWM_SPINDLE_PARAMS_XXX values is defined in config.h */
 
-  #define DEFAULT_SPINDLE_PWM_PERIOD 1000;
-  #define DEFAULT_SPINDLE_PWM_MAX_TIME_ON 1000;
-  #define DEFAULT_SPINDLE_PWM_MIN_TIME_ON 0;
-  #define DEFAULT_SPINDLE_PWM_ENABLE_AT_START 1;
+#ifndef PWM_SPINDLE_PARAMS_H
+#define PWM_SPINDLE_PARAMS_H
 
-#endif /* PWM_SPINDLE_PARAMS_GENERIC_H */
+#ifdef PWM_SPINDLE_PARAMS_GENERIC
+  // Grbl generic pwm spindle parameters.
+  #include "pwm_spindle_parameters/pwm_spindle_params_generic.h"
+
+#else
+  #error "Please define an existing PWM_SPINDLE parameters file"
+#endif
+
+#endif /* PWM_SPINDLE_PARAMS_H */

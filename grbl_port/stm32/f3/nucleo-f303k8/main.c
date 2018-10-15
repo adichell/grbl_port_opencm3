@@ -29,26 +29,9 @@ system_t sys;
 
 int main(void)
 {
-#ifdef NUCLEO_F401
+#ifdef NUCLEO_F103
 #ifndef BASIC_CPU_SPEED
-	const struct rcc_clock_scale rcc_hse_8mhz_3v3_no_prescalers =
-	{ /* 48MHz */
-		.pllm = 8,
-		.plln = 96,
-		.pllp = 2,
-		.pllq = 2,
-		.hpre = RCC_CFGR_HPRE_DIV_NONE,
-		.ppre1 = RCC_CFGR_PPRE_DIV_NONE,
-		.ppre2 = RCC_CFGR_PPRE_DIV_NONE,
-		.voltage_scale = PWR_SCALE1,
-		.flash_config = FLASH_ACR_ICEN | FLASH_ACR_DCEN |
-				FLASH_ACR_LATENCY_3WS,
-		.ahb_frequency  = 48000000,
-		.apb1_frequency = 48000000,
-		.apb2_frequency = 48000000
-	};
-//  rcc_clock_setup_hse_3v3(&rcc_hse_8mhz_3v3[RCC_CLOCK_3V3_84MHZ]);
-	rcc_clock_setup_hse_3v3(&rcc_hse_8mhz_3v3_no_prescalers);
+	rcc_clock_setup_in_hsi_out_48mhz();
 #endif
 #endif
   // Initialize system upon power-up.
@@ -59,7 +42,7 @@ int main(void)
 
   memset(&sys, 0, sizeof(system_t));  // Clear all system variables
   sys.abort = true;   // Set abort to complete initialization
-#ifdef NUCLEO_F401
+#ifdef NUCLEO_F103
   __enable_irq(); // Global enable interrupts
 #else
   sei(); // Enable interrupts
@@ -98,7 +81,6 @@ int main(void)
     plan_reset(); // Clear block buffer and planner variables
     st_reset(); // Clear stepper subsystem variables.
 
-#ifdef VARIABLE_SPINDLE
     /* Check if a minimal pwm needs to be given to the spindle at startup
        As an example, this is useful when using something like an ESC to
        control the spindle motor and the ESC needs a small input PWM to be
@@ -106,10 +88,8 @@ int main(void)
     if(settings.spindle_pwm_enable_at_start)
     {
     	// Enable Clockwise spindle with minimal pwm
-    	gc_state.modal.spindle = SPINDLE_ENABLE_CW;
     	spindle_set_state(SPINDLE_ENABLE_CW, 0);
     }
-#endif
 
     // Sync cleared gcode and planner positions to current system position.
     plan_sync_position();

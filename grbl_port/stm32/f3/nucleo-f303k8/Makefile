@@ -26,14 +26,12 @@ SRC_DIR ?= ./
 COMMON_SRC_DIR ?= ../../../common_src/
 MKDIR_P = mkdir -p
 
-SRCS := reset_vector.c flash.c   
+SRCS := reset_vector.c flash.c serial.c spindle_control.c settings.c
         
 COMMON_SRCS := coolant_control.c \
                nuts_bolts.c \
                report.c \
                stepper.c \
-               settings.c \
-               serial.c \
                system.c \
                print.c \
                limits.c \
@@ -41,11 +39,10 @@ COMMON_SRCS := coolant_control.c \
                motion_control.c \
                protocol.c \
                planner.c \
-               probe.c \
-               test_nucleo.c \
-               spindle_control.c 
+               probe.c 
+                
 
-LDSCRIPT = ./nucleo-f401re_ramcode.ld
+LDSCRIPT = ./nucleo-f303k8_ramcode.ld
 
 COMMON_OBJS := $(COMMON_SRCS:%.c=$(OBJ_DIR)%.o)
 OBJS := $(SRCS:%.c=$(OBJ_DIR)%.o)
@@ -64,11 +61,7 @@ clean : clean_obj
 
 include ../Makefile.include	
 
-$(BINARY).elf: $(OBJS) $(LDSCRIPT) $(LIB_DIR)/lib$(LIBNAME).a
-	@#printf "  LD      $(*).elf\n"
-	$(Q)$(LD) $(LDFLAGS) $(ARCH_FLAGS) $(OBJS) $(LDLIBS) -o $(BINARY).elf
-
-$(BINARY)%.map: $(OBJS) $(LDSCRIPT) $(LIB_DIR)/lib$(LIBNAME).a
+$(BINARY).elf $(BINARY)%.map: $(OBJS) $(LDSCRIPT) $(LIB_DIR)/lib$(LIBNAME).a
 	@#printf "  LD      $(*).elf\n"
 	$(Q)$(LD) $(LDFLAGS) $(ARCH_FLAGS) $(OBJS) $(LDLIBS) -o $(BINARY).elf
 

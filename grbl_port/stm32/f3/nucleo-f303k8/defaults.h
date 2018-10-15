@@ -76,10 +76,6 @@
   // Settings only for Grbl Simulator (www.github.com/grbl/grbl-sim)
   #include "defaults/defaults_simulator.h"
 
-#elif defined(DEFAULTS_CPCB)
-  // Settings only for Grbl Simulator (www.github.com/grbl/grbl-sim)
-  #include "defaults/defaults_cpcb.h"
-
 #else
   #error "Please define an existing settings file"
 #endif

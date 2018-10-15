@@ -18,10 +18,12 @@
   along with Grbl_port_opencm3.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <libopencm3/stm32/desig.h>
 #include <libopencm3/stm32/flash.h>
+#include <flash.h>
 #include <grbl.h>
 
-#define FLASH_WAIT_FOR_LAST_OP while((FLASH_SR & FLASH_SR_BSY) == FLASH_SR_BSY);
+#define FLASH_WAIT_FOR_LAST_OP while ((flash_get_status_flags() & FLASH_SR_BSY) == FLASH_SR_BSY);
 #define FLASH_CR_LOCK_OPERATION  FLASH_CR |= FLASH_CR_LOCK;
 
 /*! \brief  Unlock FLASH erase and program operations.
@@ -40,27 +42,34 @@ static void flash_unlock_private(void)
 	FLASH_KEYR = FLASH_KEYR_KEY2;
 };
 
-/*! \brief  Write a byte at a given FLASH address.
+/*! \brief  Write an half-word at a given FLASH address.
  *
- *   This function writes one byte at a given FLASH address.
+ *   This function writes one half-word at a given FLASH address.
  *
  *  \param  address FLASH address to write to.
  *
- *  \param  data The byte written to the FLASH address.
+ *  \param  data The half-word written to the FLASH address.
  */
-static void flash_program_byte_private(uint32_t address, uint8_t data)
+__attribute__( ( long_call, section(".ramcode") ) )
+static void flash_program_half_word_private(uint32_t address, uint16_t data)
 {
 	FLASH_WAIT_FOR_LAST_OP
-	FLASH_CR &= ~(FLASH_CR_PROGRAM_MASK << FLASH_CR_PROGRAM_SHIFT);
-	FLASH_CR |= FLASH_CR_PROGRAM_X8 << FLASH_CR_PROGRAM_SHIFT;
 
-	FLASH_CR |= FLASH_CR_PG;
+	if ((DESIG_FLASH_SIZE > 512) && (address >= FLASH_BASE+0x00080000)) {
+		FLASH_CR2 |= FLASH_CR_PG;
+	} else {
+		FLASH_CR |= FLASH_CR_PG;
+	}
 
-	MMIO8(address) = data;
+	MMIO16(address) = data;
 
 	FLASH_WAIT_FOR_LAST_OP
 
-	FLASH_CR &= ~FLASH_CR_PG;		/* Disable the PG bit. */
+	if ((DESIG_FLASH_SIZE > 512) && (address >= FLASH_BASE+0x00080000)) {
+		FLASH_CR2 &= ~FLASH_CR_PG;
+	} else {
+		FLASH_CR &= ~FLASH_CR_PG;
+	}
 }
 
 /*! \brief  Write a word at a given FLASH address.
@@ -73,22 +82,8 @@ static void flash_program_byte_private(uint32_t address, uint8_t data)
  */
 static void flash_program_word_private(uint32_t address, uint32_t data)
 {
-	/* Ensure that all flash operations are complete. */
-	FLASH_WAIT_FOR_LAST_OP
-	FLASH_CR &= ~(FLASH_CR_PROGRAM_MASK << FLASH_CR_PROGRAM_SHIFT);
-	FLASH_CR |= FLASH_CR_PROGRAM_X32 << FLASH_CR_PROGRAM_SHIFT;
-
-	/* Enable writes to flash. */
-	FLASH_CR |= FLASH_CR_PG;
-
-	/* Program the word. */
-	MMIO32(address) = data;
-
-	/* Wait for the write to complete. */
-	FLASH_WAIT_FOR_LAST_OP
-
-	/* Disable writes to flash. */
-	FLASH_CR &= ~FLASH_CR_PG;
+	flash_program_half_word_private(address, (uint16_t)data);
+	flash_program_half_word_private(address+2, (uint16_t)(data>>16));
 }
 
 /*! \brief  Erase a given FLASH sector.
@@ -99,20 +94,30 @@ static void flash_program_word_private(uint32_t address, uint32_t data)
  *
  *  \param  program_size program/erase access size.
  */
-static void flash_erase_sector_private(uint8_t sector, uint32_t program_size)
+__attribute__( ( long_call, section(".ramcode") ) )
+static void flash_erase_page_private(uint32_t page_address)
 {
 	FLASH_WAIT_FOR_LAST_OP
-	FLASH_CR &= ~(FLASH_CR_PROGRAM_MASK << FLASH_CR_PROGRAM_SHIFT);
-	FLASH_CR |= program_size << FLASH_CR_PROGRAM_SHIFT;
 
-	FLASH_CR &= ~(FLASH_CR_SNB_MASK << FLASH_CR_SNB_SHIFT);
-	FLASH_CR |= (sector & FLASH_CR_SNB_MASK) << FLASH_CR_SNB_SHIFT;
-	FLASH_CR |= FLASH_CR_SER;
-	FLASH_CR |= FLASH_CR_STRT;
+	if ((DESIG_FLASH_SIZE > 512)
+	    && (page_address >= FLASH_BASE+0x00080000)) {
+		FLASH_CR2 |= FLASH_CR_PER;
+		FLASH_AR2 = page_address;
+		FLASH_CR2 |= FLASH_CR_STRT;
+	} else  {
+		FLASH_CR |= FLASH_CR_PER;
+		FLASH_AR = page_address;
+		FLASH_CR |= FLASH_CR_STRT;
+	}
 
 	FLASH_WAIT_FOR_LAST_OP
-	FLASH_CR &= ~FLASH_CR_SER;
-	FLASH_CR &= ~(FLASH_CR_SNB_MASK << FLASH_CR_SNB_SHIFT);
+
+	if ((DESIG_FLASH_SIZE > 512)
+	    && (page_address >= FLASH_BASE+0x00080000)) {
+		FLASH_CR2 &= ~FLASH_CR_PER;
+	} else {
+		FLASH_CR &= ~FLASH_CR_PER;
+	}
 }
 
 /*! \brief  Read byte from FLASH.
@@ -134,6 +139,24 @@ unsigned char flash_get_char( unsigned int addr )
 }
 
 
+/*! \brief  Read half word from FLASH.
+ *
+ *  This function reads 2 bytes from a given FLASH address.
+ *
+ *  \note  The CPU is halted for 4 clock cycles during FLASH read.
+ *
+ *  \param  addr  FLASH address to read from.
+ *
+ *  \return  The bytes read from the FLASH address.
+ */
+uint16_t flash_get_half_word( unsigned int addr )
+{
+	uint16_t value = *((uint16_t*)addr);
+    FLASH_WAIT_FOR_LAST_OP // Wait for completion of previous write.
+
+    return value;
+}
+
 /*! \brief  Verifies if an erase is needed to write the given payload.
  *
  *   Check if the values to be written in FLASH needs to set to 1 a bit
@@ -145,42 +168,26 @@ unsigned char flash_get_char( unsigned int addr )
  *
  *  \param  size number of bytes to be checked.
  */
-unsigned int flash_verify_erase_need(char * destination, char *source, unsigned int size)
+unsigned int flash_verify_erase_need(uint16_t * destination, uint16_t *source, unsigned int size)
 {
 	unsigned int i;
-    char new_value; // New EFLASH value.
-    char old_value; // Old EFLASH value.
-    char diff_mask; // Difference mask, i.e. old value XOR new value.
-    unsigned char old_checksum = 0;
-    unsigned char new_checksum = 0;
+	uint16_t new_value; // New EFLASH value.
+	uint16_t old_value; // Old EFLASH value.
+    //uint16_t diff_mask; // Difference mask, i.e. old value XOR new value.
 
-    for(i = 0; i < size; i++)
+//Todo: change size/2
+    for(i = 0; i < (size/2); i++)
     {
         new_value = *(source+i); // new EFLASH value.
         old_value = *(destination+i); // Get old EFLASH value.
-        diff_mask = old_value ^ new_value; // Get bit differences.
+        //diff_mask = old_value ^ new_value; // Get bit differences.
 
         // Check if any bits are changed to '1' in the new value.
-        if( diff_mask & new_value )
+        if( old_value != 0xFFFF && new_value != 0x0000)
         {
             return ((unsigned int)1);
         }
-
-        /* Calculate checksums to be able to verify them at the loop end */
-    	new_checksum = (new_checksum << 1) | (new_checksum >> 7);
-    	new_checksum += *(source+i);
-
-    	old_checksum = (old_checksum << 1) | (old_checksum >> 7);
-    	old_checksum += *(destination+i);
     }
-
-    diff_mask = old_checksum ^ new_checksum; // Get bit differences.
-    // Check if any bits needs to be changed to '1' in the checksum.
-	if( diff_mask & new_checksum )
-	{
-		return ((unsigned int)1);
-	}
-
     return ((unsigned int)0);
 
 }
@@ -198,10 +205,20 @@ unsigned int flash_verify_erase_need(char * destination, char *source, unsigned 
  */
 void flash_put_char( unsigned int addr, unsigned char new_value)
 {
+	/* Work around since this flash has no 8-bit access capability */
+	uint16_t rebuilt_value;
+	if (addr % 2 == 0)
+	{
+		rebuilt_value = (((*((uint16_t*)addr)) & 0xFF00) | new_value);
+	}
+	else
+	{
+		rebuilt_value = ((*((uint16_t*)(addr & 0xFFFFFFFE)) & 0x00FF) | (((uint16_t)new_value) << 8));
+	}
     //__disable_irq(); // Ensure atomic operation for the write operation.
 	flash_unlock_private();
 
-    flash_program_byte_private((uint32_t) addr, (uint8_t)new_value);
+	flash_program_half_word_private((uint32_t) (addr & 0xFFFFFFFE), (uint16_t) rebuilt_value);
     
     FLASH_CR_LOCK_OPERATION
     //__enable_irq(); // Restore interrupt flag state.
@@ -220,14 +237,22 @@ void flash_put_char( unsigned int addr, unsigned char new_value)
  */
 void memcpy_to_flash_with_checksum(unsigned int destination, char *source, unsigned int size)
 {
-    unsigned char checksum = 0;
-    for(; size > 0; size--)
+    uint16_t checksum = 0;
+    uint16_t* src = ((uint16_t*)source);
+
+    flash_unlock_private();
+
+    for(; size > 0; size = size-2)
     {
         checksum = (checksum << 1) | (checksum >> 7);
-        checksum += *source;
-        flash_put_char(destination++, *(source++));
+        checksum += *src;
+        flash_program_half_word_private(((uint32_t)destination), *src);
+        destination += 2;
+        src++;
     }
-    flash_put_char(destination, checksum);
+    flash_program_half_word_private(((uint32_t)destination), checksum);
+
+    FLASH_CR_LOCK_OPERATION
 }
 
 
@@ -241,16 +266,22 @@ void memcpy_to_flash_with_checksum(unsigned int destination, char *source, unsig
  *
  *  \param  size number of bytes to be stored.
  */
-int memcpy_from_flash_with_checksum(char *destination, unsigned int source, unsigned int size) {
-  unsigned char data, checksum = 0;
-  for(; size > 0; size--)
+int memcpy_from_flash_with_checksum(char *destination, unsigned int source, unsigned int size)
+{
+  uint16_t data;
+  uint16_t checksum = 0;
+  uint16_t* dst = ((uint16_t*)destination);
+
+  for(; size > 0; size = size-2)
   {
-    data = flash_get_char(source++);
+    data = flash_get_half_word(source);
     checksum = (checksum << 1) | (checksum >> 7);
     checksum += data;
-    *(destination++) = data;
+    *(dst) = data;
+    dst++;
+    source += 2;
   }
-  return(checksum == flash_get_char(source));
+  return(checksum == flash_get_half_word(source));
 }
 
 
@@ -273,7 +304,7 @@ void update_main_sector_status(uint32_t updated_status)
 void delete_main_sector(void)
 {
     flash_unlock_private();
-    flash_erase_sector_private(((uint8_t)MAIN_SECTOR), ((uint32_t)0));
+    flash_erase_page_private((uint32_t)EFLASH_MAIN_BASE_ADDRESS);
     FLASH_CR_LOCK_OPERATION
 }
 
@@ -282,7 +313,7 @@ void delete_main_sector(void)
 void delete_copy_sector(void)
 {
     flash_unlock_private();
-    flash_erase_sector_private(((uint8_t)COPY_SECTOR), ((uint32_t)0));
+    flash_erase_page_private((uint32_t)EFLASH_COPY_BASE_ADDRESS);
     FLASH_CR_LOCK_OPERATION
 }
 
@@ -311,7 +342,7 @@ void restore_main_sector()
 	uint32_t i;
 
     flash_unlock_private();
-    for(i = 0; i < EFLASH_ERASE_AND_RESTORE_OFFSET; i++)
+    for(i = 0; i < (EFLASH_ERASE_AND_RESTORE_OFFSET / 4); i++)
     {
         value = *(address+i); // new EFLASH value.
         flash_program_word_private(((i<<2)+destination), value);

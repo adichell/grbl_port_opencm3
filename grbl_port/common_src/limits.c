@@ -224,7 +224,7 @@ static void enable_debounce_timer(void)
 {
 	/* Enable SW_DEBOUNCE_TIMER clock. */
 	rcc_periph_clock_enable(SW_DEBOUNCE_TIMER_RCC);
-	timer_reset(SW_DEBOUNCE_TIMER);
+	rcc_periph_reset_pulse(SW_DEBOUNCE_TIMER_RST);
 	/* Continous mode. */
 	timer_continuous_mode(SW_DEBOUNCE_TIMER);
 	timer_set_mode(SW_DEBOUNCE_TIMER, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
