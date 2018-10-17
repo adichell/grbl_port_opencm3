@@ -76,7 +76,7 @@
 #define PULSE_TIMER_ISR        tim2_isr
 #define PULSE_TIMER_IRQ        NVIC_TIM2_IRQ
 #define PULSE_TIMER_RCC        RCC_TIM2
-#define PULSE_TIMER_RST         RST_TIM2
+#define PULSE_TIMER_RST        RST_TIM2
 
 #define SW_DEBOUNCE_TIMER      TIM5
 #define SW_DEBOUNCE_TIMER_RCC  RCC_TIM5

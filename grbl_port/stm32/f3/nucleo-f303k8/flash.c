@@ -23,7 +23,7 @@
 #include <flash.h>
 #include <grbl.h>
 
-#define FLASH_WAIT_FOR_LAST_OP while ((flash_get_status_flags() & FLASH_SR_BSY) == FLASH_SR_BSY);
+#define FLASH_WAIT_FOR_LAST_OP while ((FLASH_SR & FLASH_SR_BSY) == FLASH_SR_BSY);
 #define FLASH_CR_LOCK_OPERATION  FLASH_CR |= FLASH_CR_LOCK;
 
 /*! \brief  Unlock FLASH erase and program operations.
@@ -55,21 +55,13 @@ static void flash_program_half_word_private(uint32_t address, uint16_t data)
 {
 	FLASH_WAIT_FOR_LAST_OP
 
-	if ((DESIG_FLASH_SIZE > 512) && (address >= FLASH_BASE+0x00080000)) {
-		FLASH_CR2 |= FLASH_CR_PG;
-	} else {
-		FLASH_CR |= FLASH_CR_PG;
-	}
+    FLASH_CR |= FLASH_CR_PG;
 
-	MMIO16(address) = data;
+    MMIO16(address) = data;
 
-	FLASH_WAIT_FOR_LAST_OP
+    FLASH_WAIT_FOR_LAST_OP
 
-	if ((DESIG_FLASH_SIZE > 512) && (address >= FLASH_BASE+0x00080000)) {
-		FLASH_CR2 &= ~FLASH_CR_PG;
-	} else {
-		FLASH_CR &= ~FLASH_CR_PG;
-	}
+    FLASH_CR &= ~FLASH_CR_PG;
 }
 
 /*! \brief  Write a word at a given FLASH address.
@@ -99,25 +91,13 @@ static void flash_erase_page_private(uint32_t page_address)
 {
 	FLASH_WAIT_FOR_LAST_OP
 
-	if ((DESIG_FLASH_SIZE > 512)
-	    && (page_address >= FLASH_BASE+0x00080000)) {
-		FLASH_CR2 |= FLASH_CR_PER;
-		FLASH_AR2 = page_address;
-		FLASH_CR2 |= FLASH_CR_STRT;
-	} else  {
-		FLASH_CR |= FLASH_CR_PER;
-		FLASH_AR = page_address;
-		FLASH_CR |= FLASH_CR_STRT;
-	}
+	FLASH_CR |= FLASH_CR_PER;
+    FLASH_AR = page_address;
+    FLASH_CR |= FLASH_CR_STRT;
 
 	FLASH_WAIT_FOR_LAST_OP
 
-	if ((DESIG_FLASH_SIZE > 512)
-	    && (page_address >= FLASH_BASE+0x00080000)) {
-		FLASH_CR2 &= ~FLASH_CR_PER;
-	} else {
-		FLASH_CR &= ~FLASH_CR_PER;
-	}
+	FLASH_CR &= ~FLASH_CR_PER;
 }
 
 /*! \brief  Read byte from FLASH.

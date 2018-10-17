@@ -67,11 +67,13 @@
 #define MAIN_TIMER_ISR         tim4_isr
 #define MAIN_TIMER_RCC         RCC_TIM4
 #define MAIN_TIMER_IRQ         NVIC_TIM4_IRQ
+#define MAIN_TIMER_RST         RST_TIM4
 
 #define STEPPER_PULSE_TIMER    TIM2
 #define PULSE_TIMER_ISR        tim2_isr
 #define PULSE_TIMER_IRQ        NVIC_TIM2_IRQ
 #define PULSE_TIMER_RCC        RCC_TIM2
+#define PULSE_TIMER_RST        RST_TIM2
 
 #define SW_DEBOUNCE_TIMER      TIM5
 #define SW_DEBOUNCE_TIMER_RCC  RCC_TIM5
