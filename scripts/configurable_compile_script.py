@@ -1,7 +1,34 @@
 #!/usr/bin/env python2
+__author__ = 'Angelo Di Chello'
+__copyright__ = "Copyright 2018"
+__license__ = "GPL3"
+__version__ = "0.1"
+__status__ = "Prototype"
 
+import sys
 import os
 import subprocess
+import shutil
+
+def form_compile_flags(flags_line):
+    result_line = ""
+    flags = flags_line.split(' ')
+
+    #Calculate final line
+    for fl in flags:
+        result_line += 'CFLAGS+=-D' + fl + ' '
+
+    return result_line
+
+def copy_rename(old_file_name, new_file_name):
+        src_dir= os.curdir
+        dst_dir= os.path.join(os.curdir , "subfolder")
+        src_file = os.path.join(src_dir, old_file_name)
+        shutil.copy(src_file,dst_dir)
+
+        dst_file = os.path.join(dst_dir, old_file_name)
+        new_dst_file_name = os.path.join(dst_dir, new_file_name)
+        os.rename(dst_file, new_dst_file_name)
 
 def runProcess(exe):    
     p = subprocess.Popen(exe, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -18,65 +45,75 @@ def run_command(command):
                          stderr=subprocess.STDOUT)
     return iter(p.stdout.readline, b'')
 
-##Read the tool path list that has to be modified according to
-##the locally installed versions of the used tools.
-with open('tools_paths.txt', 'r') as myfile:
-    pathlist = [line.rstrip('\n') for line in myfile]
+def main(argv):
+    ##Read the tool path list that has to be modified according to
+    ##the locally installed versions of the used tools.
+    with open('tools_paths.txt', 'r') as myfile:
+        pathlist = [line.rstrip('\n') for line in myfile]
 
-print "Tools paths list: "
-print pathlist
+    print "Tools paths list: "
+    print pathlist
 
-with open('flags_combos.txt', 'r') as myfile:
-    flags_lines = [line.rstrip('\n') for line in myfile]
+    with open('flags_combos.txt', 'r') as myfile:
+        flags_lines = [line.rstrip('\n') for line in myfile]
 
-print "Flags combos list: "
-print flags_lines
+    #print "Flags combos list: "
+    #print flags_lines
 
-os.chdir('..')
+    os.chdir('..')
 
-##print "Original PATH environment variable: "
-##print os.environ["PATH"]
-os.environ["PATH"] = os.pathsep.join(pathlist) + os.pathsep + os.environ["PATH"]
-print "Modified PATH environment variable: "
-print os.environ["PATH"]
+    ##print "Original PATH environment variable: "
+    ##print os.environ["PATH"]
+    os.environ["PATH"] = os.pathsep.join(pathlist) + os.pathsep + os.environ["PATH"]
+    print "Modified PATH environment variable: "
+    print os.environ["PATH"]
 
-dirname = os.path.dirname(__file__)
-lib_dirname = os.path.join(dirname, '..\libopencm3\lib')
-##print dirname
-##print lib_dirname
+    dirname = os.path.dirname(__file__)
+    lib_dirname = os.path.join(dirname, '..\libopencm3\lib')
+    ##print dirname
+    ##print lib_dirname
 
-#Check if the libraries are already compiled
-#and choose if recompile just the application
-#or everything.
-check_lib_flag = 0
-for fname in os.listdir(lib_dirname):
-    if fname.endswith('.a'):
-        check_lib_flag = 1
+    #Check if the libraries are already compiled
+    #and choose if recompile just the application
+    #or everything.
+    check_lib_flag = 0
+    for fname in os.listdir(lib_dirname):
+        if fname.endswith('.a'):
+            check_lib_flag = 1
 
-if check_lib_flag:
+    if check_lib_flag:
+        ## Execute various compilations passing defines
+        for elem in flags_lines:
 
-    ## Execute various compilations passing defines
-    for elem in flags_lines:
-        # Clean ...
-        externalCommand = 'make clean_grbl'
-        result = subprocess.Popen(externalCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-        print "Executing command : " + externalCommand
-        print result
-        
-        # ... and build
-        externalCommand = 'make grbl '+elem+' '
-        print "Executing command : " + externalCommand
-        for line in run_command(externalCommand):
-            print line
+            define_line = form_compile_flags(elem)
 
-else:
-    externalCommand = 'make clean'
-    os.system(externalCommand)
-    
-    externalCommand = 'make'
-    os.system(externalCommand)
+            # Clean ...
+            externalCommand = 'make clean_grbl'
+            result = subprocess.Popen(externalCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+            print "Executing command : " + externalCommand
+            print result
 
-print "Compile script execution ended."
+            # ... and build
+            externalCommand = 'make grbl '+define_line+' '
+            print "Executing command : " + externalCommand
+            for line in run_command(externalCommand):
+                print line
 
+            old_file_name = os.path.join(dirname, '../grbl_port/stm32/f4/nucleo-f401re/build_dir/main.bin')
+            new_file_name = os.path.join(dirname,'main_copied.bin')
+            #copy_rename(old_file_name, new_file_name)
 
-    
+    else:
+        externalCommand = 'make clean'
+        os.system(externalCommand)
+
+        externalCommand = 'make'
+        os.system(externalCommand)
+
+    print "Compile script execution ended."
+
+    pass
+
+if __name__ == "__main__":
+    main(sys.argv)
+
