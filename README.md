@@ -1,6 +1,9 @@
 # GRBL port using opencm3 libraries <span style="float:right;"><a href="https://travis-ci.org/adichell/grbl_port_opencm3" style="border-bottom:none">![Build Status](https://travis-ci.org/adichell/grbl_port_opencm3.svg?branch=master)</a></span>
-For any question/discussion use this -> [![Gitter channel](https://badges.gitter.im/libopencm3/discuss.svg)](https://gitter.im/grbl_port_opencm3/Lobby)   
-  
+For any question/discussion use this -> [![Gitter channel](https://badges.gitter.im/libopencm3/discuss.svg)](https://gitter.im/grbl_port_opencm3/Lobby)
+
+If you want to buy me a :coffee: to keep me awake :blush: -> [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BW7PE93EGM6C6)
+
+
 # Scope  
   
 The first idea of this project was to port the GRBL code to a Cortex-M processor, using the Nucleo F401RE board, that is a cheap microcontroller (~10/15 $), but is also quite performing (84MHz 32-bit Cortex-M4 CPU and many other features).  
