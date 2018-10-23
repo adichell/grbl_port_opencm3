@@ -9,14 +9,21 @@ import sys
 import os
 import subprocess
 import shutil
+import glob
 
 def form_compile_flags(flags_line):
     result_line = ""
     flags = flags_line.split(' ')
+    # print flags
 
     #Calculate final line
     for fl in flags:
-        result_line += 'CFLAGS+=-D' + fl + ' '
+        if fl.find("DEFAULTS") != -1 :
+            result_line += ' CFLAGS+=-DDEFAULTS_DEFINED CFLAGS+=-D' + fl + ' '
+        elif fl.find("PWM_SPINDLE_PARAMS") != -1 :
+            result_line += ' CFLAGS+=-PWM_PARAMS_DEFINED CFLAGS+=-D' + fl + ' '
+        else:
+            result_line += 'CFLAGS+=-D' + fl + ' '
 
     return result_line
 
@@ -29,6 +36,17 @@ def copy_rename(old_file_name, new_file_name):
         dst_file = os.path.join(dst_dir, old_file_name)
         new_dst_file_name = os.path.join(dst_dir, new_file_name)
         os.rename(dst_file, new_dst_file_name)
+
+def get_files_by_name2(regex):
+    list_paths = []
+    list_subpaths = []
+    for name in sorted(glob.glob(regex)):
+        #print os.path.abspath(name)
+        #print name.split(os.sep)[-3]
+        list_paths.append(os.path.abspath(name))
+        list_subpaths.append(name.split(os.sep)[-3])
+
+    return (list_paths,list_subpaths)
 
 def runProcess(exe):    
     p = subprocess.Popen(exe, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -99,6 +117,9 @@ def main(argv):
             for line in run_command(externalCommand):
                 print line
 
+            (old_file_names,file_name_subpaths)=get_files_by_name2(os.path.join(dirname,'../grbl_port/stm32/*/*/*/main*.bin'))
+            print old_file_names
+            print file_name_subpaths
             old_file_name = os.path.join(dirname, '../grbl_port/stm32/f4/nucleo-f401re/build_dir/main.bin')
             new_file_name = os.path.join(dirname,'main_copied.bin')
             #copy_rename(old_file_name, new_file_name)
