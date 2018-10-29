@@ -31,5 +31,5 @@ deploy:
   provider: releases
   api_key:
     secure: $GH_TOKEN
-  file:  ./grbl_port/stm32/f4/nucleo-f401re/build_dir/main.bin
+  file:  $TRAVIS_BUILD_DIR/grbl_port/stm32/f4/nucleo-f401re/build_dir/main.bin
   skip_cleanup: true
