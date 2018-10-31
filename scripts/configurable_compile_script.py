@@ -41,8 +41,8 @@ def get_files_by_name2(regex):
     list_paths = []
     list_subpaths = []
     for name in sorted(glob.glob(regex)):
-        #print os.path.abspath(name)
-        #print name.split(os.sep)[-3]
+        ##print os.path.abspath(name)
+        ##print name.split(os.sep)[-3]
         list_paths.append(os.path.abspath(name))
         list_subpaths.append(name.split(os.sep)[-3])
 
@@ -58,7 +58,7 @@ def runProcess(exe):
         break
 
 def run_command(command):
-    p = subprocess.Popen(command,
+    p = subprocess.Popen(command, shell=True,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
     return iter(p.stdout.readline, b'')
@@ -80,14 +80,16 @@ def main(argv):
 
     os.chdir('..')
 
-    ##print "Original PATH environment variable: "
-    ##print os.environ["PATH"]
-    os.environ["PATH"] = os.pathsep.join(pathlist) + os.pathsep + os.environ["PATH"]
-    print "Modified PATH environment variable: "
+    if os.name == 'nt':
+        ##print "Original PATH environment variable: "
+        ##print os.environ["PATH"]
+        os.environ["PATH"] = os.pathsep.join(pathlist) + os.pathsep + os.environ["PATH"]
+        print "Modified PATH environment variable: "
+
     print os.environ["PATH"]
 
-    dirname = os.path.dirname(__file__)
-    lib_dirname = os.path.join(dirname, '..\libopencm3\lib')
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    lib_dirname = os.path.join(dirname, ('libopencm3' + os.sep + 'lib'))
     ##print dirname
     ##print lib_dirname
 
@@ -107,7 +109,7 @@ def main(argv):
 
             # Clean ...
             externalCommand = 'make clean_grbl'
-            result = subprocess.Popen(externalCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+            result = subprocess.Popen(externalCommand,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
             print "Executing command : " + externalCommand
             print result
 
@@ -117,7 +119,8 @@ def main(argv):
             for line in run_command(externalCommand):
                 print line
 
-            (old_file_names,file_name_subpaths)=get_files_by_name2(os.path.join(dirname,'../grbl_port/stm32/*/*/*/main*.bin'))
+            build_filepath = 'grbl_port' + os.sep + 'stm32' + os.sep + '*' + os.sep + '*' + os.sep + '*' + os.sep + 'main*.bin'
+            (old_file_names,file_name_subpaths)=get_files_by_name2(os.path.join(dirname, build_filepath))
             print old_file_names
             print file_name_subpaths
             old_file_name = os.path.join(dirname, '../grbl_port/stm32/f4/nucleo-f401re/build_dir/main.bin')
