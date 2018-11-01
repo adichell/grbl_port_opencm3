@@ -13,6 +13,7 @@ import glob
 
 def form_compile_flags(flags_line):
     result_line = ""
+    name_line = ""
     flags = flags_line.split(' ')
     # print flags
 
@@ -20,12 +21,20 @@ def form_compile_flags(flags_line):
     for fl in flags:
         if fl.find("DEFAULTS") != -1 :
             result_line += ' CFLAGS+=-DDEFAULTS_DEFINED CFLAGS+=-D' + fl + ' '
+            temp_string = fl
+            name_line += temp_string.replace('DEFAULTS','')
         elif fl.find("PWM_SPINDLE_PARAMS") != -1 :
             result_line += ' CFLAGS+=-PWM_PARAMS_DEFINED CFLAGS+=-D' + fl + ' '
+            temp_string = fl
+            name_line += temp_string.replace('PWM_SPINDLE_PARAMS','')
         else:
             result_line += 'CFLAGS+=-D' + fl + ' '
+            name_line += '_' + fl
 
-    return result_line
+    print result_line ##debug print
+    print name_line ##debug print
+
+    return [result_line, name_line] 
 
 def copy_rename(old_file_name, new_file_name):
         src_dir= os.curdir
@@ -64,13 +73,6 @@ def run_command(command):
     return iter(p.stdout.readline, b'')
 
 def main(argv):
-    ##Read the tool path list that has to be modified according to
-    ##the locally installed versions of the used tools.
-    with open('tools_paths.txt', 'r') as myfile:
-        pathlist = [line.rstrip('\n') for line in myfile]
-
-    print "Tools paths list: "
-    print pathlist
 
     with open('flags_combos.txt', 'r') as myfile:
         flags_lines = [line.rstrip('\n') for line in myfile]
@@ -78,19 +80,37 @@ def main(argv):
     #print "Flags combos list: "
     #print flags_lines
 
-    os.chdir('..')
-
     if os.name == 'nt':
+        ##Read the tool path list that has to be modified according to
+        ##the locally installed versions of the used tools.
+        with open('tools_paths_windows.txt', 'r') as myfile:
+            pathlist = [line.rstrip('\n') for line in myfile]
+
+        print "Tools paths list: "
+        print pathlist
+        ##print "Original PATH environment variable: "
+        ##print os.environ["PATH"]
+        os.environ["PATH"] = os.pathsep.join(pathlist) + os.pathsep + os.environ["PATH"]    
+    elif os.name == 'posix':
+        ##Read the tool path list that has to be modified according to
+        ##the locally installed versions of the used tools.
+        with open('tools_paths_unix.txt', 'r') as myfile:
+            pathlist = [line.rstrip('\n') for line in myfile]
+
+        print "Tools paths list: "
+        print pathlist
         ##print "Original PATH environment variable: "
         ##print os.environ["PATH"]
         os.environ["PATH"] = os.pathsep.join(pathlist) + os.pathsep + os.environ["PATH"]
-        print "Modified PATH environment variable: "
 
+    print "Modified PATH environment variable: "
     print os.environ["PATH"]
+
+    os.chdir('..')
 
     dirname = os.path.dirname(os.path.abspath(__file__))
     lib_dirname = os.path.join(dirname, ('libopencm3' + os.sep + 'lib'))
-    ##print dirname
+    print dirname
     ##print lib_dirname
 
     #Check if the libraries are already compiled
@@ -105,7 +125,7 @@ def main(argv):
         ## Execute various compilations passing defines
         for elem in flags_lines:
 
-            define_line = form_compile_flags(elem)
+            [define_line, name_line]  = form_compile_flags(elem)
 
             # Clean ...
             externalCommand = 'make clean_grbl'
@@ -123,9 +143,12 @@ def main(argv):
             (old_file_names,file_name_subpaths)=get_files_by_name2(os.path.join(dirname, build_filepath))
             print old_file_names
             print file_name_subpaths
-            old_file_name = os.path.join(dirname, '../grbl_port/stm32/f4/nucleo-f401re/build_dir/main.bin')
-            new_file_name = os.path.join(dirname,'main_copied.bin')
-            #copy_rename(old_file_name, new_file_name)
+       
+            os.mkdir('./scripts/artifacts_built')
+            for ofn,fns in old_file_names,file_name_subpaths:
+                old_file_name = os.path.join(dirname, ofn)
+                new_file_name = os.path.join(dirname,'/scripts/artifacts_built/gocm3' + fns + name_line + '.bin')
+                copy_rename(old_file_name, new_file_name)
 
     else:
         externalCommand = 'make clean'
