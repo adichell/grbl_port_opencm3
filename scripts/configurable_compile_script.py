@@ -37,14 +37,17 @@ def form_compile_flags(flags_line):
     return [result_line, name_line] 
 
 def copy_rename(old_file_name, new_file_name):
-        src_dir= os.curdir
-        dst_dir= os.path.join(os.curdir , "subfolder")
-        src_file = os.path.join(src_dir, old_file_name)
-        shutil.copy(src_file,dst_dir)
+    #print old_file_name #debug print
+    #print new_file_name #debug print
 
-        dst_file = os.path.join(dst_dir, old_file_name)
-        new_dst_file_name = os.path.join(dst_dir, new_file_name)
-        os.rename(dst_file, new_dst_file_name)
+    src_dir= os.curdir
+    dst_dir= os.path.join(os.curdir , "subfolder")
+    src_file = os.path.join(src_dir, old_file_name)
+    shutil.copy(src_file,dst_dir)
+
+    dst_file = os.path.join(dst_dir, old_file_name)
+    new_dst_file_name = os.path.join(dst_dir, new_file_name)
+    os.rename(dst_file, new_dst_file_name)
 
 def get_files_by_name2(regex):
     list_paths = []
@@ -143,11 +146,20 @@ def main(argv):
             (old_file_names,file_name_subpaths)=get_files_by_name2(os.path.join(dirname, build_filepath))
             print old_file_names
             print file_name_subpaths
-       
-            os.mkdir('./scripts/artifacts_built')
-            for ofn,fns in old_file_names,file_name_subpaths:
+            
+            artifacts_folder = os.path.join(dirname, 'scripts/artifacts_built')
+            print artifacts_folder #debug print
+            if (os.path.isdir(artifacts_folder)):
+                print 'Artifacts folder exists already'
+            else:
+                print 'Artifacts folder did not exists'
+                os.mkdir(artifacts_folder)
+
+            for ofn,fns in zip(old_file_names,file_name_subpaths):
+                #print artifacts_folder #debug print
                 old_file_name = os.path.join(dirname, ofn)
-                new_file_name = os.path.join(dirname,'/scripts/artifacts_built/gocm3' + fns + name_line + '.bin')
+                new_file_name = os.path.join(dirname,('scripts/artifacts_built/gocm3_' + fns + name_line + '.bin'))
+                #print new_file_name #debug print
                 copy_rename(old_file_name, new_file_name)
 
     else:
