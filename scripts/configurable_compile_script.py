@@ -24,7 +24,7 @@ def form_compile_flags(flags_line):
             temp_string = fl
             name_line += temp_string.replace('DEFAULTS','')
         elif fl.find("PWM_SPINDLE_PARAMS") != -1 :
-            result_line += ' CFLAGS+=-PWM_PARAMS_DEFINED CFLAGS+=-D' + fl + ' '
+            result_line += ' CFLAGS+=-DPWM_PARAMS_DEFINED CFLAGS+=-D' + fl + ' '
             temp_string = fl
             name_line += temp_string.replace('PWM_SPINDLE_PARAMS','')
         else:
