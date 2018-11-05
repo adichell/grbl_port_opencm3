@@ -171,6 +171,8 @@
 #define LIMIT_X_DDR_RESET_MASK   (0x00000003<<(X_LIMIT_BIT*4 + 2)) // X limit dir mask
 #define LIMIT_X_MASK             (0x00000001<<X_LIMIT_BIT)       // X limit bits
 #define LIMIT_X_EXTI             EXTI7
+#define LIMIT_X_ISR              exti9_5_isr
+#define LIMIT_X_INT              NVIC_EXTI9_5_IRQ
 
 #define LIMIT_Y_GPIO             GPIOB
 #define LIMIT_Y_DDR              GPIOB_CRL
@@ -183,6 +185,8 @@
 #define LIMIT_Y_DDR_RESET_MASK   ((0x00000003<<(Y_LIMIT_BIT*4 + 2))) // Y limit dir mask
 #define LIMIT_Y_MASK             (0x00000001<<Y_LIMIT_BIT)         // Y limit bits
 #define LIMIT_Y_EXTI             EXTI6
+#define LIMIT_Y_ISR              exti9_5_isr
+#define LIMIT_Y_INT              NVIC_EXTI9_5_IRQ
 
 #define LIMIT_Z_GPIO             GPIOB
 #define LIMIT_Z_DDR              GPIOB_CRL
@@ -195,18 +199,20 @@
 #define LIMIT_Z_DDR_RESET_MASK   ((0x00000003<<(Z_LIMIT_BIT*4 + 2))) // Z limit dir mask
 #define LIMIT_Z_MASK             (0x00000001<<Z_LIMIT_BIT)         // Z limit bits
 #define LIMIT_Z_EXTI             EXTI0
+#define LIMIT_Z_ISR              exti0_isr
+#define LIMIT_Z_INT              NVIC_EXTI0_IRQ
 
 #define LIMIT_MASK               (LIMIT_X_MASK | LIMIT_Y_MASK | LIMIT_Z_MASK)
-#define INVERT_LIMIT_PIN_MASK    (LIMIT_MASK)
+//#define INVERT_LIMIT_PIN_MASK    (LIMIT_MASK)
 
 /* Interrupt defines for LIMIT PINS */
-#define LIMIT_INT                 NVIC_EXTI9_5_IRQ  // Pin change interrupt enable pin
-#define LIMIT_INT_vect            (EXTI6 | EXTI7)
-#define LIMIT_PCMSK               NVIC_EXTI9_5_IRQ  // Pin change interrupt register
-#define LIMIT_INT_Z               NVIC_EXTI0_IRQ    // Pin change interrupt enable pin
-#define LIMIT_INT_vect_Z          (EXTI0)
-#define LIMIT_PCMSK_Z             NVIC_EXTI0_IRQ    // Pin change interrupt register
-
+#define LIMIT_INT_vect            (LIMIT_X_EXTI | LIMIT_Y_EXTI | LIMIT_Z_EXTI)
+#define LIMIT_INT_X               NVIC_EXTI9_5_IRQ // Pin change interrupt enable pin
+#define LIMIT_PCMSK_X             NVIC_EXTI9_5_IRQ // Pin change interrupt register
+#define LIMIT_INT_Y               NVIC_EXTI9_5_IRQ // Pin change interrupt enable pin
+#define LIMIT_PCMSK_Y             NVIC_EXTI9_5_IRQ // Pin change interrupt register
+#define LIMIT_INT_Z               NVIC_EXTI0_IRQ   // Pin change interrupt enable pin
+#define LIMIT_PCMSK_Z             NVIC_EXTI0_IRQ   // Pin change interrupt register
 
 // Define user-control CONTROLs (cycle start, reset, feed hold) input pins.
 // NOTE: All CONTROLs pins must be on the same port and not on a port with other input pins (limits).

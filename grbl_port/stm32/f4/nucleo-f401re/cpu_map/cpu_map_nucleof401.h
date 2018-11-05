@@ -161,39 +161,46 @@
 #define LIMIT_X_PU_RESET_MASK    (0x3<<(X_LIMIT_BIT*2)) // X limit dir mask
 #define LIMIT_X_MASK             (1<<X_LIMIT_BIT) // X limit bits
 #define LIMIT_X_EXTI             EXTI7
+#define LIMIT_X_ISR              exti9_5_isr
+#define LIMIT_X_INT              NVIC_EXTI9_5_IRQ
 
-#define LIMIT_Y_GPIO              GPIOB
-#define LIMIT_Y_DDR               GPIOB_MODER
-#define LIMIT_Y_PORT              GPIOB_ODR
-#define LIMIT_Y_PIN               GPIOB_IDR
-#define LIMIT_Y_PU                GPIOB_PUPDR
-#define Y_LIMIT_BIT               6 // NucleoF401 Digital PB6
-#define LIMIT_Y_PU_MASK           (0x1<<(Y_LIMIT_BIT*2)) // Y limit pull-up mask
-#define LIMIT_Y_PU_RESET_MASK     ((0x3<<(Y_LIMIT_BIT*2))) // Y limit dir mask
-#define LIMIT_Y_MASK              (1<<Y_LIMIT_BIT) // Y limit bits
-#define LIMIT_Y_EXTI              EXTI6
+#define LIMIT_Y_GPIO             GPIOB
+#define LIMIT_Y_DDR              GPIOB_MODER
+#define LIMIT_Y_PORT             GPIOB_ODR
+#define LIMIT_Y_PIN              GPIOB_IDR
+#define LIMIT_Y_PU               GPIOB_PUPDR
+#define Y_LIMIT_BIT              6 // NucleoF401 Digital PB6
+#define LIMIT_Y_PU_MASK          (0x1<<(Y_LIMIT_BIT*2)) // Y limit pull-up mask
+#define LIMIT_Y_PU_RESET_MASK    ((0x3<<(Y_LIMIT_BIT*2))) // Y limit dir mask
+#define LIMIT_Y_MASK             (1<<Y_LIMIT_BIT) // Y limit bits
+#define LIMIT_Y_EXTI             EXTI6
+#define LIMIT_Y_ISR              exti9_5_isr
+#define LIMIT_Y_INT              NVIC_EXTI9_5_IRQ
 
-#define LIMIT_Z_GPIO              GPIOB
-#define LIMIT_Z_DDR               GPIOB_MODER
-#define LIMIT_Z_PORT              GPIOB_ODR
-#define LIMIT_Z_PIN               GPIOB_IDR
-#define LIMIT_Z_PU                GPIOB_PUPDR
-#define Z_LIMIT_BIT               0 // NucleoF401 Digital PB0
-#define LIMIT_Z_PU_MASK           (0x1<<(Z_LIMIT_BIT*2)) // Z limit pull-up mask
-#define LIMIT_Z_PU_RESET_MASK     ((0x3<<(Z_LIMIT_BIT*2))) // Z limit dir mask
-#define LIMIT_Z_MASK              (1<<Z_LIMIT_BIT) // Y limit bits
-#define LIMIT_Z_EXTI              EXTI0
+#define LIMIT_Z_GPIO             GPIOB
+#define LIMIT_Z_DDR              GPIOB_MODER
+#define LIMIT_Z_PORT             GPIOB_ODR
+#define LIMIT_Z_PIN              GPIOB_IDR
+#define LIMIT_Z_PU               GPIOB_PUPDR
+#define Z_LIMIT_BIT              0 // NucleoF401 Digital PB0
+#define LIMIT_Z_PU_MASK          (0x1<<(Z_LIMIT_BIT*2)) // Z limit pull-up mask
+#define LIMIT_Z_PU_RESET_MASK    ((0x3<<(Z_LIMIT_BIT*2))) // Z limit dir mask
+#define LIMIT_Z_MASK             (1<<Z_LIMIT_BIT) // Y limit bits
+#define LIMIT_Z_EXTI             EXTI0
+#define LIMIT_Z_ISR              exti0_isr
+#define LIMIT_Z_INT              NVIC_EXTI0_IRQ
 
 #define LIMIT_MASK                (LIMIT_X_MASK | LIMIT_Y_MASK | LIMIT_Z_MASK)
 //#define INVERT_LIMIT_PIN_MASK     (LIMIT_MASK)
 
 /* Interrupt defines for LIMIT PINS */
-#define LIMIT_INT                 NVIC_EXTI9_5_IRQ  // Pin change interrupt enable pin
-#define LIMIT_INT_vect            (EXTI6 | EXTI7)
-#define LIMIT_PCMSK               NVIC_EXTI9_5_IRQ // Pin change interrupt register
-#define LIMIT_INT_Z               NVIC_EXTI0_IRQ  // Pin change interrupt enable pin
-#define LIMIT_INT_vect_Z          (EXTI0)
-#define LIMIT_PCMSK_Z             NVIC_EXTI0_IRQ // Pin change interrupt register
+#define LIMIT_INT_vect            (LIMIT_X_EXTI | LIMIT_Y_EXTI | LIMIT_Z_EXTI)
+#define LIMIT_INT_X               NVIC_EXTI9_5_IRQ // Pin change interrupt enable pin
+#define LIMIT_PCMSK_X             NVIC_EXTI9_5_IRQ // Pin change interrupt register
+#define LIMIT_INT_Y               NVIC_EXTI9_5_IRQ // Pin change interrupt enable pin
+#define LIMIT_PCMSK_Y             NVIC_EXTI9_5_IRQ // Pin change interrupt register
+#define LIMIT_INT_Z               NVIC_EXTI0_IRQ   // Pin change interrupt enable pin
+#define LIMIT_PCMSK_Z             NVIC_EXTI0_IRQ   // Pin change interrupt register
 
 
 // Define user-control CONTROLs (cycle start, reset, feed hold) input pins.

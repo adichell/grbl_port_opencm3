@@ -273,9 +273,10 @@ uint8_t plan_check_full_buffer()
   // TODO: After this for-loop, we don't touch the stepper algorithm data. Might be a good idea
   // to try to keep these types of things completely separate from the planner for portability.
   int32_t target_steps[N_AXIS];
-  float unit_vec[N_AXIS], delta_mm,delta_mm_signed;
+  float unit_vec[N_AXIS], delta_mm;
   uint8_t idx;
   #ifdef COREXY
+    float delta_mm_signed;
     float corexy_dir_invert_X, corexy_dir_invert_Y, corexy_dir_invert_Z;
 
     corexy_dir_invert_X = bit_istrue(settings.dir_invert_mask,bit(X_AXIS)) ? -1 : 1;

@@ -37,10 +37,10 @@
 void limits_init() 
 {
 #ifdef NUCLEO
-	SET_LIMITS_RCC;
+    SET_LIMITS_RCC;
 
-	SET_LIMITS_DDR;  // Set as input pins
-	#ifdef DISABLE_LIMIT_PIN_PULL_UP
+    SET_LIMITS_DDR;  // Set as input pins
+    #ifdef DISABLE_LIMIT_PIN_PULL_UP
     UNSET_LIMITS_PU; // Normal low operation. Requires external pull-down.
     #else
     SET_LIMITS_PU;   // Enable internal pull-up resistors. Normal high operation.
@@ -49,29 +49,28 @@ void limits_init()
     if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE)) {
     	/*reset pending exti events */
     	exti_reset_request(LIMIT_INT_vect);
-    	exti_reset_request(LIMIT_INT_vect_Z);
     	/*reset pending exti interrupts */
-    	nvic_clear_pending_irq(LIMIT_INT);
+    	nvic_clear_pending_irq(LIMIT_INT_X);
+    	nvic_clear_pending_irq(LIMIT_INT_Y);
     	nvic_clear_pending_irq(LIMIT_INT_Z);
     	exti_select_source(LIMIT_X_EXTI, LIMIT_X_GPIO);
     	exti_select_source(LIMIT_Y_EXTI, LIMIT_Y_GPIO);
     	exti_select_source(LIMIT_Z_EXTI, LIMIT_Z_GPIO);
     	exti_enable_request(LIMIT_INT_vect);
-		exti_set_trigger(LIMIT_INT_vect, EXTI_TRIGGER_FALLING);
-		nvic_enable_irq(LIMIT_INT);// Enable Limits pins Interrupt
-    	exti_enable_request(LIMIT_INT_vect_Z);
-		exti_set_trigger(LIMIT_INT_vect_Z, EXTI_TRIGGER_FALLING);
-		nvic_enable_irq(LIMIT_INT_Z);// Enable Limits pins Interrupt
-	} else {
-		limits_disable(); 
-	}
+        exti_set_trigger(LIMIT_INT_vect, EXTI_TRIGGER_FALLING);
+        nvic_enable_irq(LIMIT_INT_X);// Enable Limits pins Interrupt
+        nvic_enable_irq(LIMIT_INT_Y);// Enable Limits pins Interrupt
+        nvic_enable_irq(LIMIT_INT_Z);// Enable Limits pins Interrupt
+    } else {
+        limits_disable(); 
+    }
 
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_initialization();
 #endif
 	
 #else
-  LIMIT_DDR &= ~(LIMIT_MASK); // Set as input pins
+    LIMIT_DDR &= ~(LIMIT_MASK); // Set as input pins
 
   #ifdef DISABLE_LIMIT_PIN_PULL_UP
     LIMIT_PORT &= ~(LIMIT_MASK); // Normal low operation. Requires external pull-down.
@@ -79,19 +78,17 @@ void limits_init()
     LIMIT_PORT |= (LIMIT_MASK);  // Enable internal pull-up resistors. Normal high operation.
   #endif
 
-  if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE)) {
-    LIMIT_PCMSK |= LIMIT_MASK; // Enable specific pins of the Pin Change Interrupt
-    PCICR |= (1 << LIMIT_INT); // Enable Pin Change Interrupt
-  } else {
-    limits_disable(); 
-  }
+    if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE)) {
+        LIMIT_PCMSK |= LIMIT_MASK; // Enable specific pins of the Pin Change Interrupt
+        PCICR |= (1 << LIMIT_INT); // Enable Pin Change Interrupt
+    } else {
+        limits_disable(); 
+    }
   
   #ifdef ENABLE_SOFTWARE_DEBOUNCE
-  #ifndef NUCLEO
     MCUSR &= ~(1<<WDRF);
     WDTCSR |= (1<<WDCE) | (1<<WDE);
     WDTCSR = (1<<WDP0); // Set time-out at ~32msec.
-  #endif
   #endif
 #endif //ifdef NUCLEO_F401
 }
@@ -101,11 +98,13 @@ void limits_init()
 void limits_disable()
 {
 #ifdef NUCLEO
-	nvic_disable_irq(LIMIT_INT);// Disable Limits pins Interrupt
-	nvic_disable_irq(LIMIT_INT_Z);// Disable Limits pins Interrupt
+    /* Disable Limits pins Interrupt */
+    nvic_disable_irq(LIMIT_INT_X);
+    nvic_disable_irq(LIMIT_INT_Y);
+    nvic_disable_irq(LIMIT_INT_Z);
 #else
-  LIMIT_PCMSK &= ~LIMIT_MASK;  // Disable specific pins of the Pin Change Interrupt
-  PCICR &= ~(1 << LIMIT_INT);  // Disable Pin Change Interrupt
+    LIMIT_PCMSK &= ~LIMIT_MASK;  // Disable specific pins of the Pin Change Interrupt
+    PCICR &= ~(1 << LIMIT_INT);  // Disable Pin Change Interrupt
 #endif
 }
 
@@ -154,10 +153,10 @@ uint8_t limits_get_state()
 // your e-stop switch to the Arduino reset pin, since it is the most correct way to do this.
 #ifndef ENABLE_SOFTWARE_DEBOUNCE
 #ifdef NUCLEO
-void exti0_isr()
+void LIMIT_X_ISR()
 {
-	exti_reset_request(LIMIT_INT_vect_Z);
-	nvic_clear_pending_irq(NVIC_EXTI0_IRQ);
+    exti_reset_request(LIMIT_X_EXTI);
+    nvic_clear_pending_irq(LIMIT_X_INT);
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_interrupt_signalling((uint32_t)10);
 #endif
@@ -182,29 +181,26 @@ void exti0_isr()
       }
     }
 }
-
-void exti9_5_isr()
-{
-	/* Clear interrupt request */
-	exti_reset_request(LIMIT_INT_vect);
-	nvic_clear_pending_irq(NVIC_EXTI9_5_IRQ);
-#else
-  ISR(LIMIT_INT_vect) // DEFAULT: Limit pin change interrupt process. {
 #endif
 
+#if LIMIT_Y_INT != LIMIT_X_INT
+void LIMIT_Y_ISR()
+{
+    exti_reset_request(LIMIT_Y_EXTI);
+    nvic_clear_pending_irq(LIMIT_Y_INT);
 #ifdef TEST_NUCLEO_EXTI_PINS
-    test_interrupt_signalling((uint32_t)5);
+    test_interrupt_signalling((uint32_t)10);
 #endif
 
     // Ignore limit switches if already in an alarm state or in-process of executing an alarm.
-    // When in the alarm state, Grbl should have been reset or will force a reset, so any pending 
-    // moves in the planner and serial buffers are all cleared and newly sent blocks will be 
+    // When in the alarm state, Grbl should have been reset or will force a reset, so any pending
+    // moves in the planner and serial buffers are all cleared and newly sent blocks will be
     // locked out until a homing cycle or a kill lock command. Allows the user to disable the hard
     // limit setting if their limits are constantly triggering after a reset and move their axes.
-    if (sys.state != STATE_ALARM) { 
+    if (sys.state != STATE_ALARM) {
       if (!(sys_rt_exec_alarm)) {
         #ifdef HARD_LIMIT_FORCE_STATE_CHECK
-          // Check limit pin state. 
+          // Check limit pin state.
           if (limits_get_state()) {
             mc_reset(); // Initiate system kill.
             bit_true_atomic(sys_rt_exec_alarm, (EXEC_ALARM_HARD_LIMIT|EXEC_CRITICAL_EVENT)); // Indicate hard limit critical event
@@ -215,52 +211,96 @@ void exti9_5_isr()
         #endif
       }
     }
-  }  
+}
+#endif
+
+#if (LIMIT_Z_INT != LIMIT_X_INT) && (LIMIT_Z_INT != LIMIT_Y_INT) 
+void LIMIT_Z_ISR()
+{
+    exti_reset_request(LIMIT_Z_EXTI);
+    nvic_clear_pending_irq(LIMIT_Z_INT);
+#ifdef TEST_NUCLEO_EXTI_PINS
+    test_interrupt_signalling((uint32_t)10);
+#endif
+
+    // Ignore limit switches if already in an alarm state or in-process of executing an alarm.
+    // When in the alarm state, Grbl should have been reset or will force a reset, so any pending
+    // moves in the planner and serial buffers are all cleared and newly sent blocks will be
+    // locked out until a homing cycle or a kill lock command. Allows the user to disable the hard
+    // limit setting if their limits are constantly triggering after a reset and move their axes.
+    if (sys.state != STATE_ALARM) {
+      if (!(sys_rt_exec_alarm)) {
+        #ifdef HARD_LIMIT_FORCE_STATE_CHECK
+          // Check limit pin state.
+          if (limits_get_state()) {
+            mc_reset(); // Initiate system kill.
+            bit_true_atomic(sys_rt_exec_alarm, (EXEC_ALARM_HARD_LIMIT|EXEC_CRITICAL_EVENT)); // Indicate hard limit critical event
+          }
+        #else
+          mc_reset(); // Initiate system kill.
+          bit_true_atomic(sys_rt_exec_alarm, (EXEC_ALARM_HARD_LIMIT|EXEC_CRITICAL_EVENT)); // Indicate hard limit critical event
+        #endif
+      }
+    }
+}
+#endif
 //TODO: adjust software debounce isr routine for nucleo 
 #else // OPTIONAL: Software debounce limit pin routine.
   // Upon limit pin change, enable watchdog timer to create a short delay.
 #ifdef NUCLEO
 static void enable_debounce_timer(void)
 {
-	/* Enable SW_DEBOUNCE_TIMER clock. */
-	rcc_periph_clock_enable(SW_DEBOUNCE_TIMER_RCC);
-	rcc_periph_reset_pulse(SW_DEBOUNCE_TIMER_RST);
-	/* Continous mode. */
-	timer_continuous_mode(SW_DEBOUNCE_TIMER);
-	timer_set_mode(SW_DEBOUNCE_TIMER, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
+    /* Enable SW_DEBOUNCE_TIMER clock. */
+    rcc_periph_clock_enable(SW_DEBOUNCE_TIMER_RCC);
+    rcc_periph_reset_pulse(SW_DEBOUNCE_TIMER_RST);
+    /* Continous mode. */
+    timer_continuous_mode(SW_DEBOUNCE_TIMER);
+    timer_set_mode(SW_DEBOUNCE_TIMER, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
     /* ARR reload enable. */
     timer_enable_preload(SW_DEBOUNCE_TIMER);
     timer_set_prescaler(SW_DEBOUNCE_TIMER, (256*PSC_MUL_FACTOR)-1);// set to 1/8 Prescaler
-	timer_set_period(SW_DEBOUNCE_TIMER, 0X09FF);
+    timer_set_period(SW_DEBOUNCE_TIMER, 0X09FF);
 
     /* Enable SW_DEBOUNCE_TIMER Stepper Driver Interrupt. */
     timer_enable_irq(SW_DEBOUNCE_TIMER, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
-	nvic_enable_irq(SW_DEBOUNCE_TIMER_IRQ);
+    nvic_enable_irq(SW_DEBOUNCE_TIMER_IRQ);
     timer_enable_counter(SW_DEBOUNCE_TIMER); /* Counter enable. */
 }
 
-void exti0_isr()
+void LIMIT_X_ISR()
 {
     /* Clear interrupt request */
-	exti_reset_request(LIMIT_INT_vect_Z);
-	nvic_clear_pending_irq(NVIC_EXTI0_IRQ);
+    exti_reset_request(LIMIT_X_EXTI);
+    nvic_clear_pending_irq(LIMIT_X_INT);
 
     enable_debounce_timer();
 }
-void exti9_5_isr()
+
+#if LIMIT_Y_INT != LIMIT_X_INT
+void LIMIT_Y_ISR()
 {
-	/* Clear interrupt request */
-	exti_reset_request(LIMIT_INT_vect);
-	nvic_clear_pending_irq(NVIC_EXTI9_5_IRQ);
+    exti_reset_request(LIMIT_Y_EXTI);
+    nvic_clear_pending_irq(LIMIT_Y_INT);
 
     enable_debounce_timer();
 }
+#endif
+
+#if (LIMIT_Z_INT != LIMIT_X_INT) && (LIMIT_Z_INT != LIMIT_Y_INT) 
+void LIMIT_Z_ISR()
+{
+    exti_reset_request(LIMIT_Z_EXTI);
+    nvic_clear_pending_irq(LIMIT_Z_INT);
+
+    enable_debounce_timer();
+}
+#endif
 
 void SW_DEBOUNCE_TIMER_ISR()
 {
-	timer_disable_counter(SW_DEBOUNCE_TIMER);
-	nvic_clear_pending_irq(SW_DEBOUNCE_TIMER_IRQ);
-	nvic_disable_irq(SW_DEBOUNCE_TIMER_IRQ);
+    timer_disable_counter(SW_DEBOUNCE_TIMER);
+    nvic_clear_pending_irq(SW_DEBOUNCE_TIMER_IRQ);  
+    nvic_disable_irq(SW_DEBOUNCE_TIMER_IRQ);
 
 #else
   ISR(LIMIT_INT_vect) { if (!(WDTCSR & (1<<WDIE))) { WDTCSR |= (1<<WDIE); } }
@@ -389,8 +429,8 @@ void limits_go_home(uint8_t cycle_mask)
 #ifdef ENABLE_SOFTWARE_DEBOUNCE
         if (limit_state != 0)
         {
-        	enable_debounce_timer();
-        	limit_state = limits_get_state();
+            enable_debounce_timer();
+            limit_state = limits_get_state();
         }
 #endif
         for (idx=0; idx<N_AXIS; idx++) {
