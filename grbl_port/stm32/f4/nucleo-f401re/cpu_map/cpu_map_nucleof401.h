@@ -253,37 +253,34 @@
 #define SAFETY_DOOR_CONTROL_PIN           GPIOC_IDR
 #define SAFETY_DOOR_CONTROL_PU            GPIOC_PUPDR
 #define SAFETY_DOOR_BIT                   3 // NucleoF401 Digital PC3
+#define SAFETY_DOOR_PU_MASK               (0x1<<(SAFETY_DOOR_BIT*2)) // SAFETY_DOOR pull-up mask
+#define SAFETY_DOOR_PU_RESET_MASK         (0x3<<(SAFETY_DOOR_BIT*2)) // SAFETY_DOOR pull-up reset mask
+#define SAFETY_DOOR_MASK                  (1<<SAFETY_DOOR_BIT)
 /* Interrupt defines for SAFETY DOOR CONTROL PIN */
 #define SAFETY_DOOR_CONTROL_INT           NVIC_EXTI3_IRQ  // Pin change interrupt enable pin
 #define SAFETY_DOOR_CONTROL_INT_vect      (EXTI3) 
 #define SAFETY_DOOR_CONTROL_ISR           exti3_isr // Pin change interrupt register
-
-
-#define SAFETY_DOOR_PU_MASK               (0x1<<(SAFETY_DOOR_BIT*2)) // SAFETY_DOOR pull-up mask
-#define SAFETY_DOOR_PU_RESET_MASK         (0x3<<(SAFETY_DOOR_BIT*2)) // SAFETY_DOOR pull-up reset mask
-#define SAFETY_DOOR_MASK                  (1<<SAFETY_DOOR_BIT)
 
 #define CONTROL_INT_vect  (RESET_CONTROL_INT_vect | FEED_HOLD_CONTROL_INT_vect | CYCLE_START_CONTROL_INT_vect | SAFETY_DOOR_CONTROL_INT_vect)
 
 //#define CONTROL_MASK ((1<<RESET_BIT)|(1<<FEED_HOLD_BIT)|(1<<CYCLE_START_BIT)|(1<<SAFETY_DOOR_BIT))
 //#define CONTROL_INVERT_MASK CONTROL_MASK // May be re-defined to only invert certain control pins.
 
-
 // Define probe switch input pin.
-#define PROBE_DDR       GPIOC_MODER
-#define PROBE_PIN       GPIOC_IDR
-#define PROBE_PORT      GPIOC_ODR
-#define PROBE_PU        GPIOC_PUPDR
-#define PROBE_BIT       0 // NucleoF401 Digital PC0
-#define PROBE_PU_MASK          (0x1<<(PROBE_BIT*2)) // X limit pull-up mask
-#define PROBE_PU_RESET_MASK    (0x3<<(PROBE_BIT*2)) // X limit dir mask
-#define PROBE_MASK      (1<<PROBE_BIT)
+#define PROBE_DDR           GPIOC_MODER
+#define PROBE_PIN           GPIOC_IDR
+#define PROBE_PORT          GPIOC_ODR
+#define PROBE_PU            GPIOC_PUPDR
+#define PROBE_BIT           0                    // NucleoF401 Digital PC0
+#define PROBE_PU_MASK       (0x1<<(PROBE_BIT*2))
+#define PROBE_PU_RESET_MASK (0x3<<(PROBE_BIT*2))
+#define PROBE_MASK          (1<<PROBE_BIT)
 
 
 // Define spindle enable and spindle direction output pins.
 #define SPINDLE_ENABLE_DDR               GPIOA_MODER
 #define SPINDLE_ENABLE_PORT              GPIOA_ODR
-#define SPINDLE_ENABLE_BIT               6 // NucleoF401 Digital Pin 6
+#define SPINDLE_ENABLE_BIT               6                           // NucleoF401 Digital Pin PA6
 #define SPINDLE_ENABLE_MASK_DDR          (1<<(SPINDLE_ENABLE_BIT*2)) // All (step bits*2) because the direction/mode has 2 bits
 #define SPINDLE_ENABLE_DDR_RESET_MASK    (0x3<<(SPINDLE_ENABLE_BIT*2))
 #define SPINDLE_ENABLE_MASK              (1<<SPINDLE_ENABLE_BIT)     // SPINDLE_ENABLE mask bit
@@ -300,15 +297,6 @@
   // Advanced Configuration Below You should not need to touch these variables
   // Set Timer up to use TIMER4B which is attached to Digital Pin 7
   #define PWM_MAX_VALUE       256.0
-  #define TCCRA_REGISTER		TCCR4A
-  #define TCCRB_REGISTER		TCCR4B
-  #define OCR_REGISTER		OCR4B
-  
-  #define COMB_BIT			COM4B1
-  #define WAVE0_REGISTER		WGM40
-  #define WAVE1_REGISTER		WGM41
-  #define WAVE2_REGISTER		WGM42
-  #define WAVE3_REGISTER		WGM43
   
   #define SPINDLE_PWM_DDR               GPIOA_MODER
   #define SPINDLE_PWM_PORT              GPIOA_ODR
@@ -546,3 +534,4 @@ do{ \
   do { \
     COOLANT_MIST_PORT &= ~(COOLANT_MIST_MASK); \
   } while (0)
+

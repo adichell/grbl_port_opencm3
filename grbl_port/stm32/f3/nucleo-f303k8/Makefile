@@ -53,7 +53,7 @@ OBJS += $(COMMON_OBJS)
 
 ###############################################################################
 # C & C++ preprocessor common flags
-CPPFLAGS  += -I. -I./cpu_map -I$(COMMON_SRC_DIR) -I.$(COMMON_SRC_DIR)defaults  -I.$(COMMON_SRC_DIR)pwm_spindle_parameters
+CPPFLAGS  += -I. -I./cpu_map -I$(COMMON_SRC_DIR) -I.$(COMMON_SRC_DIR)defaults  -I$(COMMON_SRC_DIR)pwm_spindle_parameters
 
 ###############################################################################
 # Used libraries
