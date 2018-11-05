@@ -52,15 +52,18 @@
 #define SERIAL_DMA_IRQ          NVIC_DMA1_STREAM5_IRQ
 #endif
 
-#define SERIAL_USART            USART1
-#define SERIAL_USART_BASE       USART1_BASE
-#define SERIAL_USART_RCC        RCC_USART1
+#define SERIAL_USART            USART2
+#define SERIAL_USART_BASE       USART2_BASE
+#define SERIAL_USART_RCC        RCC_USART2
 #define SERIAL_USART_RCC_GPIO   RCC_GPIOA
 #define SERIAL_USART_GPIO_GROUP GPIOA
 #define SERIAL_USART_GPIO_AF    GPIO_AF7
-#define SERIAL_USART_GPIOS      (GPIO9 | GPIO10)
-#define SERIAL_USART_ISR        usart1_isr
-#define SERIAL_USART_IRQ        NVIC_USART1_IRQ
+#define SERIAL_USART_GPIOS      (GPIO2 | GPIO15)
+#define SERIAL_USART_ISR        usart2_exti26_isr
+#define SERIAL_USART_IRQ        NVIC_USART2_EXTI26_IRQ
+#define USART_SR                USART_ISR
+#define USART_SR_RXNE           USART_ISR_RXNE
+#define USART_SR_TXE            USART_ISR_TXE
 
 #define STEPPER_GPIOS_RCC      (RCC_GPIOA | RCC_GPIOB)
 
@@ -82,13 +85,14 @@
 #define SW_DEBOUNCE_TIMER_ISR  tim5_isr
 #define SW_DEBOUNCE_TIMER_RST  RST_TIM5
 
-#define SPINDLE_TIMER          TIM3
-#define SPINDLE_TIMER_RCC      RCC_TIM3
+#define SPINDLE_TIMER          TIM17
+#define SPINDLE_TIMER_RCC      RCC_TIM17
+#define SPINDLE_TIMER_RST      RST_TIM17
 #define SPINDLE_TIMER_CHAN     TIM_OC1
 #define SPINDLE_TIMER_PWM_TYPE TIM_OCM_PWM1
-#define SPINDLE_GPIO_GROUP     GPIOA
+#define SPINDLE_GPIO_GROUP     GPIOB
 #define SPINDLE_GPIO_AF        GPIO_AF2
-#define SPINDLE_GPIO           GPIO6
+#define SPINDLE_GPIO           GPIO5
 
 #define COOLANT_RCC            RCC_GPIOA
 
@@ -133,8 +137,8 @@
 
 #define DIRECTION_XY_DDR       GPIOB_MODER
 #define DIRECTION_XY_PORT      GPIOB_ODR
-#define X_DIRECTION_BIT        6  // NucleoF401 Digital PB6
-#define Y_DIRECTION_BIT        1  // NucleoF401 Digital PB1
+#define X_DIRECTION_BIT        6  // NucleoF303 Digital PB6
+#define Y_DIRECTION_BIT        1  // NucleoF303 Digital PB1
 #define DIRECTION_MASK_XY_DDR  ((1<<(X_DIRECTION_BIT*2))|(1<<(Y_DIRECTION_BIT*2))) // All direction bits
 #define DIRECTION_XY_DDR_RESET_MASK  ((0x3<<(X_DIRECTION_BIT*2))|(0x3<<(Y_DIRECTION_BIT*2))) // All direction bits
 #define DIRECTION_MASK_XY      ((1<<X_DIRECTION_BIT)|(1<<Y_DIRECTION_BIT))         // XY DIR MASK bits
@@ -244,21 +248,9 @@
 #define CYCLE_START_CONTROL_INT_vect    (EXTI3)
 #define CYCLE_START_CONTROL_ISR         exti3_isr
 
-#define SAFETY_DOOR_CONTROL_GPIO          GPIOA
-#define SAFETY_DOOR_CONTROL_DDR           GPIOA_MODER
-#define SAFETY_DOOR_CONTROL_PORT          GPIOA_ODR
-#define SAFETY_DOOR_CONTROL_PIN           GPIOA_IDR
-#define SAFETY_DOOR_CONTROL_PU            GPIOA_PUPDR
-#define SAFETY_DOOR_BIT                   2 // NucleoF303 Digital PA2
-#define SAFETY_DOOR_PU_MASK               (0x1<<(SAFETY_DOOR_BIT*2)) // SAFETY_DOOR pull-up mask
-#define SAFETY_DOOR_PU_RESET_MASK         (0x3<<(SAFETY_DOOR_BIT*2)) // SAFETY_DOOR pull-up reset mask
-#define SAFETY_DOOR_MASK                  (1<<SAFETY_DOOR_BIT)
-/* Interrupt defines for SAFETY DOOR CONTROL PIN */
-#define SAFETY_DOOR_CONTROL_INT           NVIC_EXTI2_TSC_IRQ
-#define SAFETY_DOOR_CONTROL_INT_vect      (EXTI2)
-#define SAFETY_DOOR_CONTROL_ISR           exti2_isr
+#define CONTROL_INT_vect  (RESET_CONTROL_INT_vect | FEED_HOLD_CONTROL_INT_vect | CYCLE_START_CONTROL_INT_vect)
 
-#define CONTROL_INT_vect  (RESET_CONTROL_INT_vect | FEED_HOLD_CONTROL_INT_vect | CYCLE_START_CONTROL_INT_vect | SAFETY_DOOR_CONTROL_INT_vect)
+#undef  ENABLE_SAFETY_DOOR_INPUT_PIN
 
 // Define probe switch input pin.
 #define PROBE_DDR            GPIOA_MODER
@@ -288,7 +280,6 @@
 // Start of PWM & Stepper Enabled Spindle
 #ifdef VARIABLE_SPINDLE
   // Advanced Configuration Below You should not need to touch these variables
-  // Set Timer up to use TIMER4B which is attached to Digital Pin 7
   #define PWM_MAX_VALUE       256.0
 
   #define SPINDLE_PWM_DDR               GPIOB_MODER
@@ -302,14 +293,14 @@
 // Define flood and mist coolant enable output pins.
 #define COOLANT_FLOOD_DDR               GPIOA_MODER
 #define COOLANT_FLOOD_PORT              GPIOA_ODR
-#define COOLANT_FLOOD_BIT               4 // NucleoF303 Digital Pin 1
+#define COOLANT_FLOOD_BIT               5 // NucleoF303 Digital Pin 1
 #define COOLANT_FLOOD_DDR_MASK          (1<<(COOLANT_FLOOD_BIT*2)) // All (step bits*2) because the direction/mode has 2 bits
 #define COOLANT_FLOOD_DDR_RESET_MASK    (0x3<<(COOLANT_FLOOD_BIT*2))
 #define COOLANT_FLOOD_MASK              (1<<COOLANT_FLOOD_BIT)     // COOLANT_FLOOD mask bit
 #ifdef ENABLE_M7 // Mist coolant disabled by default. See config.h to enable/disable.
 #define COOLANT_MIST_DDR               GPIOA_MODER
 #define COOLANT_MIST_PORT              GPIOA_ODR
-#define COOLANT_MIST_BIT               6 // NucleoF303 Digital Pin 2
+#define COOLANT_MIST_BIT               7 // NucleoF303 Digital Pin 2
 #define COOLANT_MIST_DDR_MASK          (1<<(COOLANT_MIST_BIT*2)) // All (step bits*2) because the direction/mode has 2 bits
 #define COOLANT_MIST_DDR_RESET_MASK    (0x3<<(COOLANT_MIST_BIT*2))
 #define COOLANT_MIST_MASK              (1<<COOLANT_MIST_BIT)     // COOLANT_MIST mask bit
@@ -410,7 +401,6 @@
     RESET_CONTROL_DDR &= ~RESET_CONTROL_PU_RESET_MASK; \
     FEED_HOLD_CONTROL_DDR  &= ~FEED_HOLD_PU_RESET_MASK; \
     CYCLE_START_CONTROL_DDR  &= ~CYCLE_START_PU_RESET_MASK; \
-    SAFETY_DOOR_CONTROL_DDR  &= ~SAFETY_DOOR_PU_RESET_MASK; \
   } while (0)
 
 /* unset pull-up for controls pin */
@@ -419,7 +409,6 @@
     RESET_CONTROL_PU &= ~RESET_CONTROL_PU_RESET_MASK; \
     FEED_HOLD_CONTROL_PU  &= ~FEED_HOLD_PU_RESET_MASK; \
     CYCLE_START_CONTROL_PU  &= ~CYCLE_START_PU_RESET_MASK; \
-    SAFETY_DOOR_CONTROL_PU  &= ~SAFETY_DOOR_PU_RESET_MASK; \
   } while (0)
 
 /* set pull-up for controls pin */
@@ -428,11 +417,9 @@
     RESET_CONTROL_PU        &= ~RESET_CONTROL_PU_RESET_MASK; \
     FEED_HOLD_CONTROL_PU    &= ~FEED_HOLD_PU_RESET_MASK; \
     CYCLE_START_CONTROL_PU  &= ~CYCLE_START_PU_RESET_MASK; \
-    SAFETY_DOOR_CONTROL_PU  &= ~SAFETY_DOOR_PU_RESET_MASK; \
     RESET_CONTROL_PU        |= RESET_CONTROL_PU_MASK; \
     FEED_HOLD_CONTROL_PU    |= FEED_HOLD_PU_MASK; \
     CYCLE_START_CONTROL_PU  |= CYCLE_START_PU_MASK; \
-    SAFETY_DOOR_CONTROL_PU  |= SAFETY_DOOR_PU_MASK; \
   } while (0)
 
 #define SET_SPINDLE_DIRECTION_DDR \

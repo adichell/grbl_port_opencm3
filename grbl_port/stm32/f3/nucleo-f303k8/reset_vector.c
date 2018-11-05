@@ -20,7 +20,7 @@
 
 #include "grbl.h"
 
-#ifdef NUCLEO_F103
+#ifdef NUCLEO_F303
 
 extern int main(void);
 

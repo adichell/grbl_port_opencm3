@@ -31,45 +31,54 @@ volatile uint8_t sys_rt_exec_alarm;  // Global realtime executor bitflag variabl
 void system_init()
 {
 #ifdef NUCLEO
-	/* Enable GPIOA,GPIOB, GPIOC and SYSCFG clocks. */
-	SET_SYSTEM_RCC;
+    /* Enable GPIOA,GPIOB, GPIOC and SYSCFG clocks. */
+    SET_SYSTEM_RCC;
 
-	SET_CONTROLS_DDR; // Configure as input pins
+    SET_CONTROLS_DDR; // Configure as input pins
 #ifdef DISABLE_CONTROL_PIN_PULL_UP
-	UNSET_CONTROLS_PU;
+    UNSET_CONTROLS_PU;
 #else
-	SET_CONTROLS_PU;
+    SET_CONTROLS_PU;
 #endif
-	/*reset pending exti events */
-	exti_reset_request(RESET_CONTROL_INT_vect);
-	exti_reset_request(FEED_HOLD_CONTROL_INT_vect);
-	exti_reset_request(CYCLE_START_CONTROL_INT_vect);
-	exti_reset_request(SAFETY_DOOR_CONTROL_INT_vect);
+    /*reset pending exti events */
+    exti_reset_request(RESET_CONTROL_INT_vect);
+    exti_reset_request(FEED_HOLD_CONTROL_INT_vect);
+    exti_reset_request(CYCLE_START_CONTROL_INT_vect);
+    #ifdef ENABLE_SAFETY_DOOR_INPUT_PIN
+    exti_reset_request(SAFETY_DOOR_CONTROL_INT_vect);
+    #endif
+    /*reset pending exti interrupts */
+    nvic_clear_pending_irq(FEED_HOLD_CONTROL_INT);
+    nvic_clear_pending_irq(RESET_CONTROL_INT);
+    nvic_clear_pending_irq(CYCLE_START_CONTROL_INT);
+    #ifdef ENABLE_SAFETY_DOOR_INPUT_PIN
+    nvic_clear_pending_irq(SAFETY_DOOR_CONTROL_INT);
+    #endif
 
-	/*reset pending exti interrupts */
-	nvic_clear_pending_irq(FEED_HOLD_CONTROL_INT);
-	nvic_clear_pending_irq(RESET_CONTROL_INT);
-	nvic_clear_pending_irq(SAFETY_DOOR_CONTROL_INT);
-	nvic_clear_pending_irq(CYCLE_START_CONTROL_INT);
+    //exti_select_source(EXTI0, GPIOC);
+    exti_select_source(RESET_CONTROL_INT_vect, RESET_CONTROL_GPIO);
+    exti_select_source(FEED_HOLD_CONTROL_INT_vect, FEED_HOLD_CONTROL_GPIO);
+    exti_select_source(CYCLE_START_CONTROL_INT_vect, CYCLE_START_CONTROL_GPIO);
+    #ifdef ENABLE_SAFETY_DOOR_INPUT_PIN
+    exti_select_source(SAFETY_DOOR_CONTROL_INT_vect, SAFETY_DOOR_CONTROL_GPIO);
+    #endif
 
-	//exti_select_source(EXTI0, GPIOC);
-	exti_select_source(RESET_CONTROL_INT_vect, RESET_CONTROL_GPIO);
-	exti_select_source(FEED_HOLD_CONTROL_INT_vect, FEED_HOLD_CONTROL_GPIO);
-	exti_select_source(CYCLE_START_CONTROL_INT_vect, CYCLE_START_CONTROL_GPIO);
-	exti_select_source(SAFETY_DOOR_CONTROL_INT_vect, SAFETY_DOOR_CONTROL_GPIO);
-	exti_enable_request(CONTROL_INT_vect);
-	exti_set_trigger(CONTROL_INT_vect, EXTI_TRIGGER_FALLING);
+    exti_enable_request(CONTROL_INT_vect);
+    exti_set_trigger(CONTROL_INT_vect, EXTI_TRIGGER_FALLING);
 
-	nvic_enable_irq(RESET_CONTROL_INT);// Enable control pin Interrupt
-	nvic_enable_irq(FEED_HOLD_CONTROL_INT);// Enable control pin Interrupt
-	nvic_enable_irq(CYCLE_START_CONTROL_INT);// Enable control pin Interrupt
-	nvic_enable_irq(SAFETY_DOOR_CONTROL_INT);// Enable control pin Interrupt
+    nvic_enable_irq(RESET_CONTROL_INT);// Enable control pin Interrupt
+    nvic_enable_irq(FEED_HOLD_CONTROL_INT);// Enable control pin Interrupt
+    nvic_enable_irq(CYCLE_START_CONTROL_INT);// Enable control pin Interrupt
+    #ifdef ENABLE_SAFETY_DOOR_INPUT_PIN
+    nvic_enable_irq(SAFETY_DOOR_CONTROL_INT);// Enable control pin Interrupt
+    #endif
+
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_initialization();
 #endif
 
 #else
-	CONTROL_DDR &= ~(CONTROL_MASK); // Configure as input pins
+    CONTROL_DDR &= ~(CONTROL_MASK); // Configure as input pins
   #ifdef DISABLE_CONTROL_PIN_PULL_UP
     CONTROL_PORT &= ~(CONTROL_MASK); // Normal low operation. Requires external pull-down.
   #else
@@ -83,8 +92,8 @@ void system_init()
 #ifdef NUCLEO
 void FEED_HOLD_CONTROL_ISR()
 {
-	exti_reset_request(FEED_HOLD_CONTROL_INT_vect);
-	nvic_clear_pending_irq(FEED_HOLD_CONTROL_INT);
+    exti_reset_request(FEED_HOLD_CONTROL_INT_vect);
+    nvic_clear_pending_irq(FEED_HOLD_CONTROL_INT);
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_interrupt_signalling((uint32_t)1);
 #endif
@@ -93,32 +102,35 @@ void FEED_HOLD_CONTROL_ISR()
 
 void RESET_CONTROL_ISR()
 {
-	exti_reset_request(RESET_CONTROL_INT_vect);
-	nvic_clear_pending_irq(RESET_CONTROL_INT);
+    exti_reset_request(RESET_CONTROL_INT_vect);
+    nvic_clear_pending_irq(RESET_CONTROL_INT);
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_interrupt_signalling((uint32_t)2);
 #endif
-	mc_reset();
+    mc_reset();
 }
 
+
+#ifdef ENABLE_SAFETY_DOOR_INPUT_PIN
 void SAFETY_DOOR_CONTROL_ISR()
 {
-	exti_reset_request(SAFETY_DOOR_CONTROL_INT_vect);
-	nvic_clear_pending_irq(SAFETY_DOOR_CONTROL_INT);
+    exti_reset_request(SAFETY_DOOR_CONTROL_INT_vect);
+    nvic_clear_pending_irq(SAFETY_DOOR_CONTROL_INT);
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_interrupt_signalling((uint32_t)3);
 #endif
     bit_true(sys_rt_exec_state, EXEC_SAFETY_DOOR);
 }
+#endif
 
 void CYCLE_START_CONTROL_ISR()
 {
-	exti_reset_request(CYCLE_START_CONTROL_INT_vect);
-	nvic_clear_pending_irq(CYCLE_START_CONTROL_INT);
+    exti_reset_request(CYCLE_START_CONTROL_INT_vect);
+    nvic_clear_pending_irq(CYCLE_START_CONTROL_INT);
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_interrupt_signalling((uint32_t)4);
 #endif
-	bit_true(sys_rt_exec_state, EXEC_CYCLE_START);
+    bit_true(sys_rt_exec_state, EXEC_CYCLE_START);
 }
 #else
 
@@ -163,7 +175,6 @@ uint8_t system_check_safety_door_ajar()
     return(false); // Input pin not enabled, so just return that it's closed.
   #endif
 }
-
 
 // Executes user startup script, if stored.
 void system_execute_startup(char *line)
@@ -225,6 +236,7 @@ uint8_t system_execute_line(char *line)
           if (sys.state == STATE_ALARM) {
             report_feedback_message(MESSAGE_ALARM_UNLOCK);
             sys.state = STATE_IDLE;
+
             // Don't run startup script. Prevents stored moves in startup from causing accidents.
             if (system_check_safety_door_ajar()) { // Check safety door switch before returning.
               bit_true(sys_rt_exec_state, EXEC_SAFETY_DOOR);
@@ -260,7 +272,6 @@ uint8_t system_execute_line(char *line)
           if (bit_istrue(settings.flags,BITFLAG_HOMING_ENABLE)) {
             sys.state = STATE_HOMING; // Set system state variable
             // Only perform homing if Grbl is idle or lost.
-
             // TODO: Likely not required.
             if (system_check_safety_door_ajar()) { // Check safety door switch before homing.
               bit_true(sys_rt_exec_state, EXEC_SAFETY_DOOR);

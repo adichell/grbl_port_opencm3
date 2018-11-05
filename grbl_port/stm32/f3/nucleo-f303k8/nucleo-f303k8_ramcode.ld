@@ -17,14 +17,14 @@
  * along with grbl_port_opencm3. If not, see <http://www.gnu.org/licenses/>.
  */
  
-/* Linker script for Nucleo F103RB (STM32F103RB, 128K flash, 20K RAM). 
+/* Linker script for Nucleo F303RB (STM32F303K8, 256K flash, 40K RAM). 
  * with a section reserved for code to be fetched by RAM.
  */
 
 /* Define memory regions. */
 MEMORY
 {
-	rom (rx) : ORIGIN = 0x08000000, LENGTH = 62K
+	rom (rx) : ORIGIN = 0x08000000, LENGTH = 250K
 	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 18K
 	ram_txt (rwx) : ORIGIN = 0x20004800, LENGTH = 2K
 }

@@ -29,9 +29,9 @@ system_t sys;
 
 int main(void)
 {
-#ifdef NUCLEO_F103
+#ifdef NUCLEO_F303
 #ifndef BASIC_CPU_SPEED
-	rcc_clock_setup_in_hsi_out_48mhz();
+    rcc_clock_setup_hsi(&rcc_hsi_configs[RCC_CLOCK_HSI_48MHZ]);
 #endif
 #endif
   // Initialize system upon power-up.
@@ -42,7 +42,7 @@ int main(void)
 
   memset(&sys, 0, sizeof(system_t));  // Clear all system variables
   sys.abort = true;   // Set abort to complete initialization
-#ifdef NUCLEO_F103
+#ifdef NUCLEO_F303
   __enable_irq(); // Global enable interrupts
 #else
   sei(); // Enable interrupts
@@ -87,8 +87,8 @@ int main(void)
        activated. */
     if(settings.spindle_pwm_enable_at_start)
     {
-    	// Enable Clockwise spindle with minimal pwm
-    	spindle_set_state(SPINDLE_ENABLE_CW, 0);
+        // Enable Clockwise spindle with minimal pwm
+        spindle_set_state(SPINDLE_ENABLE_CW, 0);
     }
 
     // Sync cleared gcode and planner positions to current system position.

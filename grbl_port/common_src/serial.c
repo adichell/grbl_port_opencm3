@@ -182,7 +182,7 @@ void SERIAL_USART_ISR(void)
 #ifndef USE_RX_DMA
 	if(((USART_SR(SERIAL_USART) & USART_SR_RXNE)  & USART_CR1(SERIAL_USART)) != 0)
 	{		
-	  uint8_t data = (uint8_t)USART_DR(SERIAL_USART) & USART_DR_MASK;
+	  uint8_t data = (uint8_t)(usart_recv(SERIAL_USART));
 	  uint32_t next_head;
 	  
 	  // Pick off realtime command characters directly from the serial stream. These characters are
@@ -209,8 +209,9 @@ void SERIAL_USART_ISR(void)
 	{
 		uint8_t tail = serial_tx_buffer_tail; // Temporary serial_tx_buffer_tail (to optimize for volatile)
 
-		// Send a byte from the buffer	
-		USART_DR(SERIAL_USART) = (((uint16_t)serial_tx_buffer[tail]) & USART_DR_MASK);
+		// Send a byte from the buffer
+                usart_send(SERIAL_USART, ((uint16_t)serial_tx_buffer[tail]));
+		//USART_DR(SERIAL_USART) = (((uint16_t)serial_tx_buffer[tail]) & USART_DR_MASK);
 		// Update tail position
 		tail++;
 		if (tail == TX_BUFFER_SIZE) { tail = 0; }
