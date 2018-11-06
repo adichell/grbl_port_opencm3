@@ -146,7 +146,7 @@ def main(argv):
             for line in run_command(externalCommand):
                 print line
 
-            build_filepath = 'grbl_port' + os.sep + 'stm32' + os.sep + '*' + os.sep + '*' + os.sep + '*' + os.sep + 'main*.bin'
+            build_filepath = '..' + os.sep + 'grbl_port' + os.sep + 'stm32' + os.sep + '*' + os.sep + '*' + os.sep + '*' + os.sep + 'main*.bin'
             (old_file_names,file_name_subpaths)=get_files_by_name2(os.path.join(dirname, build_filepath))
             print old_file_names
             print file_name_subpaths
