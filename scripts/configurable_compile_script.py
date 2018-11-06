@@ -106,65 +106,72 @@ def main(argv):
     print lib_dirname
 
     os.chdir('..')
-    
-    #Check if the libraries are already compiled
-    #and choose if recompile just the application
-    #or everything.
+
+    ## Create Artifacts folder if it doesn't exist.
+    artifacts_folder = os.path.join(dirname, 'artifacts_built')
+    print artifacts_folder #debug print
+    if (os.path.isdir(artifacts_folder)):
+        print 'Artifacts folder exists already'
+    else:
+        print 'Artifacts folder did not exists'
+        os.mkdir(artifacts_folder)
+
+    ## Clean Artifacts folder removing previous compilation files.
+    for file in glob.glob(artifacts_folder + os.sep + '*.bin'):
+        os.remove(file)
+
+    ## Check if the libraries are already compiled
+    ## and choose if recompile just the application
+    ## or everything.
     check_lib_flag = 0
     for fname in os.listdir(lib_dirname):
         if fname.endswith('.a'):
             check_lib_flag = 1
 
-    if check_lib_flag:
-        ## Create Artifacts folder if it doesn't exist.
-        artifacts_folder = os.path.join(dirname, 'artifacts_built')
-        print artifacts_folder #debug print
-        if (os.path.isdir(artifacts_folder)):
-            print 'Artifacts folder exists already'
-        else:
-            print 'Artifacts folder did not exists'
-            os.mkdir(artifacts_folder)
-
-        ## Clean Artifacts folder removing previous compilation files.
-        for file in glob.glob(artifacts_folder + os.sep + '*.bin'):
-            os.remove(file)
-
-        ## Execute various compilations passing defines
-        for elem in flags_lines:
-
-            [define_line, name_line]  = form_compile_flags(elem)
-
-            # Clean ...
-            externalCommand = 'make clean_grbl'
-            result = subprocess.Popen(externalCommand,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-            print "Executing command : " + externalCommand
-            print result
-
-            # ... and build
-            externalCommand = 'make grbl '+define_line+' '
-            print "Executing command : " + externalCommand
-            for line in run_command(externalCommand):
-                print line
-
-            build_filepath = '..' + os.sep + 'grbl_port' + os.sep + 'stm32' + os.sep + '*' + os.sep + '*' + os.sep + '*' + os.sep + 'main*.bin'
-            (old_file_names,file_name_subpaths)=get_files_by_name2(os.path.join(dirname, build_filepath))
-            print old_file_names
-            print file_name_subpaths
-
-            ## Copy and rename compiled file into the artifacts folder
-            for ofn,fns in zip(old_file_names,file_name_subpaths):
-                #print artifacts_folder #debug print
-                old_file_name = os.path.join(dirname, ofn)
-                new_file_name = os.path.join(artifacts_folder,('gocm3_' + fns + name_line + '.bin'))
-                print new_file_name #debug print
-                shutil.copy(old_file_name, new_file_name)
-
-    else:
+    if check_lib_flag == 0:
         externalCommand = 'make clean'
-        os.system(externalCommand)
+        #result = subprocess.Popen(externalCommand,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+        print "Executing command : " + externalCommand
+        #print result
+        for line in run_command(externalCommand):
+            print line
 
-        externalCommand = 'make'
-        os.system(externalCommand)
+        externalCommand = 'make lib'
+        #result = subprocess.Popen(externalCommand,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+        print "Executing command : " + externalCommand
+        #print result
+        for line in run_command(externalCommand):
+            print line
+
+    ## Execute various compilations passing defines
+    for elem in flags_lines:
+
+        [define_line, name_line]  = form_compile_flags(elem)
+
+        # Clean ...
+        externalCommand = 'make clean_grbl'
+        result = subprocess.Popen(externalCommand,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+        print "Executing command : " + externalCommand
+        print result
+
+        # ... and build
+        externalCommand = 'make grbl '+define_line+' '
+        print "Executing command : " + externalCommand
+        for line in run_command(externalCommand):
+            print line
+
+        build_filepath = '..' + os.sep + 'grbl_port' + os.sep + 'stm32' + os.sep + '*' + os.sep + '*' + os.sep + '*' + os.sep + 'main*.bin'
+        (old_file_names,file_name_subpaths)=get_files_by_name2(os.path.join(dirname, build_filepath))
+        print old_file_names
+        print file_name_subpaths
+
+        ## Copy and rename compiled file into the artifacts folder
+        for ofn,fns in zip(old_file_names,file_name_subpaths):
+            #print artifacts_folder #debug print
+            old_file_name = os.path.join(dirname, ofn)
+            new_file_name = os.path.join(artifacts_folder,('gocm3_' + fns + name_line + '.bin'))
+            print new_file_name #debug print
+            shutil.copy(old_file_name, new_file_name)
 
     print "Compile script execution ended."
 
