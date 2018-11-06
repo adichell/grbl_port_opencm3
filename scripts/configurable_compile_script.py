@@ -98,13 +98,15 @@ def main(argv):
     print "Modified PATH environment variable: "
     print os.environ["PATH"]
 
-    os.chdir('..')
+    
 
     dirname = os.path.dirname(os.path.abspath(__file__))
-    lib_dirname = os.path.join(dirname, ('libopencm3' + os.sep + 'lib'))
+    lib_dirname = os.path.join(dirname, ('..' + os.sep + 'libopencm3' + os.sep + 'lib'))
     print dirname
     print lib_dirname
 
+    os.chdir('..')
+    
     #Check if the libraries are already compiled
     #and choose if recompile just the application
     #or everything.
@@ -115,7 +117,7 @@ def main(argv):
 
     if check_lib_flag:
         ## Create Artifacts folder if it doesn't exist.
-        artifacts_folder = os.path.join(dirname, 'scripts/artifacts_built')
+        artifacts_folder = os.path.join(dirname, 'artifacts_built')
         print artifacts_folder #debug print
         if (os.path.isdir(artifacts_folder)):
             print 'Artifacts folder exists already'
