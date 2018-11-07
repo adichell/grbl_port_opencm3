@@ -24,9 +24,9 @@
 /* Define memory regions. */
 MEMORY
 {
-	rom (rx) : ORIGIN = 0x08000000, LENGTH = 250K
-	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 18K
-	ram_txt (rwx) : ORIGIN = 0x20004800, LENGTH = 2K
+	rom (rx) : ORIGIN = 0x08000000, LENGTH = 60K
+	ram (rwx) : ORIGIN = 0x10000000, LENGTH = 4K
+	ram_txt (rwx) : ORIGIN = 0x20000000, LENGTH = 12K
 }
 
 /* Enforce emmition of the vector table. */
@@ -41,8 +41,10 @@ SECTIONS
 	.ramcode : {
 		    _ramcode = .;
 	        *(.vectors)	/* Vector table */
-	}  >ram_txt AT >rom
+			*flash.o
+			*serial.o
 	_eramcode = .;
+	}  >ram_txt AT >rom
 	_ramcode_loadaddr = LOADADDR(.ramcode);
 	
 	.text : {
