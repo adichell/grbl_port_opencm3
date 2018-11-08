@@ -67,11 +67,11 @@
 
 #define STEPPER_GPIOS_RCC      (RCC_GPIOA | RCC_GPIOB)
 
-#define STEPPER_MAIN_TIMER     TIM4
-#define MAIN_TIMER_ISR         tim4_isr
-#define MAIN_TIMER_RCC         RCC_TIM4
-#define MAIN_TIMER_IRQ         NVIC_TIM4_IRQ
-#define MAIN_TIMER_RST         RST_TIM4
+#define STEPPER_MAIN_TIMER     TIM3
+#define MAIN_TIMER_ISR         tim3_isr
+#define MAIN_TIMER_RCC         RCC_TIM3
+#define MAIN_TIMER_IRQ         NVIC_TIM3_IRQ
+#define MAIN_TIMER_RST         RST_TIM3
 
 #define STEPPER_PULSE_TIMER    TIM2
 #define PULSE_TIMER_ISR        tim2_isr
