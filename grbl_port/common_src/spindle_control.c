@@ -29,7 +29,7 @@
 void spindle_init()
 {    
   //prescaler to get 1 us granularity
-  uint32_t prescaler = (rcc_apb1_frequency / 1000000)-1;
+	uint32_t prescaler = (SPINDLE_TIMER_BUS_FREQ / 1000000)-1;
 
   // Configure variable spindle PWM and enable pin, if requried. On the Uno, PWM and enable are
   // combined unless configured otherwise.
@@ -145,6 +145,7 @@ void spindle_set_state(uint8_t state, float rpm)
 
         timer_set_oc_value(SPINDLE_TIMER, SPINDLE_TIMER_CHAN, current_pwm);// Set PWM pin output
         timer_enable_oc_output(SPINDLE_TIMER, SPINDLE_TIMER_CHAN);
+        timer_enable_break_main_output(SPINDLE_TIMER);
 
         /* Counter enable. */
         timer_enable_counter(SPINDLE_TIMER);

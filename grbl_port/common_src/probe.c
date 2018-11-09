@@ -30,7 +30,7 @@ uint8_t probe_invert_mask;
 void probe_init() 
 {
 #ifdef NUCLEO
-  rcc_periph_clock_enable(RCC_GPIOC);
+  rcc_periph_clock_enable(PROBE_RCC);
   SET_PROBE_DDR;
   #ifdef DISABLE_PROBE_PIN_PULL_UP
     UNSET_PROBE_PU; // Normal low operation. Requires external pull-down.

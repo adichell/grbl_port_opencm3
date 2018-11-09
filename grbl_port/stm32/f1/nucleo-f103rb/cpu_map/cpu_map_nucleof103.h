@@ -64,8 +64,6 @@
 #define SERIAL_USART_ISR        usart2_isr
 #define SERIAL_USART_IRQ        NVIC_USART2_IRQ
 
-#define STEPPER_GPIOS_RCC      (RCC_GPIOA | RCC_GPIOB)
-
 #define STEPPER_MAIN_TIMER     TIM4
 #define MAIN_TIMER_ISR         tim4_isr
 #define MAIN_TIMER_RCC         RCC_TIM4
@@ -92,6 +90,7 @@
 #define SPINDLE_GPIO_GROUP     GPIOA
 #define SPINDLE_GPIO_AF        GPIO_AF2
 #define SPINDLE_GPIO           GPIO6
+#define SPINDLE_TIMER_BUS_FREQ rcc_apb1_frequency
 
 #define COOLANT_RCC            RCC_GPIOC
 
@@ -292,6 +291,7 @@
 #define PROBE_PU_RESET_MASK  PROBE_PU_MASK        // Probe pull-up reset mask
 #define PROBE_DDR_RESET_MASK (0x00000003<<(PROBE_BIT*4 + 2)) // Probe dir reset mask
 #define PROBE_MASK           (0x00000001<<PROBE_BIT)
+#define PROBE_RCC            RCC_GPIOC
 
 
 // Define spindle enable and spindle direction output pins.

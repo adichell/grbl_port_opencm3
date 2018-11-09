@@ -28,11 +28,11 @@
 
 //#define BASIC_CPU_SPEED
 #ifdef BASIC_CPU_SPEED
-#define F_CPU (16000000)
+#define F_CPU (8000000)
 #define PSC_MUL_FACTOR 1
 #else
 #define F_CPU (48000000)
-#define PSC_MUL_FACTOR 3
+#define PSC_MUL_FACTOR 6
 #endif
 
 #ifdef GRBL_PLATFORM
@@ -65,8 +65,6 @@
 #define USART_SR_RXNE           USART_ISR_RXNE
 #define USART_SR_TXE            USART_ISR_TXE
 
-#define STEPPER_GPIOS_RCC      (RCC_GPIOA | RCC_GPIOB)
-
 #define STEPPER_MAIN_TIMER     TIM3
 #define MAIN_TIMER_ISR         tim3_isr
 #define MAIN_TIMER_RCC         RCC_TIM3
@@ -91,8 +89,9 @@
 #define SPINDLE_TIMER_CHAN     TIM_OC1
 #define SPINDLE_TIMER_PWM_TYPE TIM_OCM_PWM1
 #define SPINDLE_GPIO_GROUP     GPIOB
-#define SPINDLE_GPIO_AF        GPIO_AF2
+#define SPINDLE_GPIO_AF        GPIO_AF10
 #define SPINDLE_GPIO           GPIO5
+#define SPINDLE_TIMER_BUS_FREQ rcc_apb2_frequency
 
 #define COOLANT_RCC            RCC_GPIOA
 
@@ -253,14 +252,15 @@
 #undef  ENABLE_SAFETY_DOOR_INPUT_PIN
 
 // Define probe switch input pin.
-#define PROBE_DDR            GPIOA_MODER
-#define PROBE_PIN            GPIOA_IDR
-#define PROBE_PORT           GPIOA_ODR
-#define PROBE_PU             GPIOA_PUPDR
-#define PROBE_BIT            6                    // NucleoF303 Digital PA6
+#define PROBE_DDR           GPIOA_MODER
+#define PROBE_PIN           GPIOA_IDR
+#define PROBE_PORT          GPIOA_ODR
+#define PROBE_PU            GPIOA_PUPDR
+#define PROBE_BIT           6                    // NucleoF303 Digital PA6
 #define PROBE_PU_MASK       (0x1<<(PROBE_BIT*2))
 #define PROBE_PU_RESET_MASK (0x3<<(PROBE_BIT*2))
 #define PROBE_MASK          (1<<PROBE_BIT)
+#define PROBE_RCC           RCC_GPIOA
 
 // Define spindle enable and spindle direction output pins.
 #define SPINDLE_ENABLE_DDR               GPIOB_MODER
@@ -310,6 +310,7 @@
   do { \
     rcc_periph_clock_enable(RCC_GPIOA); \
     rcc_periph_clock_enable(RCC_GPIOB); \
+    rcc_periph_clock_enable(RCC_GPIOF); \
   } while (0)
 
 #define SET_STEP_DDR \
