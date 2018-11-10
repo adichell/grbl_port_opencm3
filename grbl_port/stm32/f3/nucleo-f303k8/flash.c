@@ -24,22 +24,7 @@
 
 #define FLASH_WAIT_FOR_LAST_OP while((FLASH_SR & FLASH_SR_BSY) == FLASH_SR_BSY);
 #define FLASH_CR_LOCK_OPERATION  FLASH_CR |= FLASH_CR_LOCK;
-
-/*! \brief  Unlock FLASH erase and program operations.
- *
- *  This function is needed to unlock erase and
- *  program operations of the FLASH.
- *
- */
-static void flash_unlock_private(void)
-{
-    /* Clear the unlock sequence state. */
-    FLASH_CR |= FLASH_CR_LOCK;
-
-    /* Authorize the FPEC access. */
-    FLASH_KEYR = FLASH_KEYR_KEY1;
-    FLASH_KEYR = FLASH_KEYR_KEY2;
-};
+#define FLASH_CR_UNLOCK_OPERATION do{FLASH_KEYR = FLASH_KEYR_KEY1;FLASH_KEYR = FLASH_KEYR_KEY2;}while(0);
 
 /*! \brief  Write an half-word at a given FLASH address.
  *
@@ -211,7 +196,7 @@ void flash_put_char( unsigned int addr, unsigned char new_value)
         rebuilt_value = ((*((uint16_t*)(addr & 0xFFFFFFFE)) & 0x00FF) | (((uint16_t)new_value) << 8));
     }
     //__disable_irq(); // Ensure atomic operation for the write operation.
-    flash_unlock_private();
+    FLASH_CR_UNLOCK_OPERATION
 
     flash_program_half_word_private((uint32_t) (addr & 0xFFFFFFFE), (uint16_t) rebuilt_value);
     
@@ -235,7 +220,7 @@ void memcpy_to_flash_with_checksum(unsigned int destination, char *source, unsig
     uint16_t checksum = 0;
     uint16_t* src = ((uint16_t*)source);
 
-    flash_unlock_private();
+    FLASH_CR_UNLOCK_OPERATION
 
     for(; size > 0; size = size-2)
     {
@@ -289,7 +274,7 @@ int memcpy_from_flash_with_checksum(char *destination, unsigned int source, unsi
  */
 void update_main_sector_status(uint32_t updated_status)
 {
-    flash_unlock_private();
+    FLASH_CR_UNLOCK_OPERATION
     flash_program_word_private(((uint32_t)EFLASH_MAIN_SECTOR_STATUS), updated_status);
     FLASH_CR_LOCK_OPERATION
 }
@@ -298,7 +283,7 @@ void update_main_sector_status(uint32_t updated_status)
  */
 void delete_main_sector(void)
 {
-    flash_unlock_private();
+    FLASH_CR_UNLOCK_OPERATION
     flash_erase_page_private((uint32_t)EFLASH_MAIN_BASE_ADDRESS);
     FLASH_CR_LOCK_OPERATION
 }
@@ -307,7 +292,7 @@ void delete_main_sector(void)
  */
 void delete_copy_sector(void)
 {
-    flash_unlock_private();
+    FLASH_CR_UNLOCK_OPERATION
     flash_erase_page_private((uint32_t)EFLASH_COPY_BASE_ADDRESS);
     FLASH_CR_LOCK_OPERATION
 }
@@ -318,7 +303,7 @@ void copy_from_main_to_copy(uint32_t start_address_offset, uint32_t end_address_
     uint32_t value;
     uint32_t i;
 
-    flash_unlock_private();
+    FLASH_CR_UNLOCK_OPERATION
 
     for(i = 0; (start_address_offset+(i<<2)) < end_address_offset; i++)
     {
@@ -336,7 +321,7 @@ void restore_main_sector()
     uint32_t value;
     uint32_t i;
 
-    flash_unlock_private();
+    FLASH_CR_UNLOCK_OPERATION
     for(i = 0; i < (EFLASH_ERASE_AND_RESTORE_OFFSET / 4); i++)
     {
         value = *(address+i); // new EFLASH value.
