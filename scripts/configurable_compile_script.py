@@ -148,6 +148,9 @@ def main(argv):
 
         [define_line, name_line]  = form_compile_flags(elem)
 
+        ## Make it verbose:
+        #define_line += ' V=1'
+
         # Clean ...
         externalCommand = 'make clean_grbl'
         result = subprocess.Popen(externalCommand,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
