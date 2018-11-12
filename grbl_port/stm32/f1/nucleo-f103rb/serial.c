@@ -69,38 +69,35 @@ uint8_t serial_get_tx_buffer_count()
 void serial_init()
 {
 #ifdef NUCLEO
-	/* Enable GPIOD clock for USART2. */
-	rcc_periph_clock_enable(RCC_GPIOA);
+  /* Enable GPIOD clock for SERIAL_USART. */
+  rcc_periph_clock_enable(SERIAL_USART_RCC_GPIO);
 
-	/* Enable clocks for USART2. */
-	rcc_periph_clock_enable(RCC_USART2);
-	
-	/* Setup GPIO pins for USART2 transmit and receive. */
-	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, (GPIO2 | GPIO3));
+  /* Enable clocks for SERIAL_USART. */
+  rcc_periph_clock_enable(SERIAL_USART_RCC);
 
-	/* Setup USART2 TX pin as alternate function. */
-	//gpio_set_af(GPIOA, GPIO_AF7, GPIO2 | GPIO3);
-	
-	/* Setup USART2 parameters. */
-	// Set baud rate
-	usart_set_baudrate(USART2, BAUD_RATE);
-	usart_set_databits(USART2, 8);
-	usart_set_stopbits(USART2, USART_STOPBITS_1);
-	usart_set_mode(USART2, USART_MODE_TX_RX);
-	usart_set_parity(USART2, USART_PARITY_NONE);
-	usart_set_flow_control(USART2, USART_FLOWCONTROL_NONE);
+  /* Setup GPIO pins for SERIAL_USART transmit and receive. */
+  gpio_set_mode(SERIAL_USART_GPIO_GROUP, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, SERIAL_USART_GPIOS);
+
+  /* Setup SERIAL_USART parameters. */
+  // Set baud rate
+  usart_set_baudrate(SERIAL_USART, BAUD_RATE);
+  usart_set_databits(SERIAL_USART, 8);
+  usart_set_stopbits(SERIAL_USART, USART_STOPBITS_1);
+  usart_set_mode(SERIAL_USART, USART_MODE_TX_RX);
+  usart_set_parity(SERIAL_USART, USART_PARITY_NONE);
+  usart_set_flow_control(SERIAL_USART, USART_FLOWCONTROL_NONE);
 
 #ifdef USE_RX_DMA
-	usart_enable_rx_dma(USART2);
-	serial_rx_dma_init();
+  usart_enable_rx_dma(SERIAL_USART);
+  serial_rx_dma_init();
 #else
-	usart_enable_rx_interrupt(USART2);
+  usart_enable_rx_interrupt(SERIAL_USART);
 #endif
-	/* Finally enable the USART. */
-	usart_enable(USART2);
-	
-	nvic_enable_irq(NVIC_USART2_IRQ);
-	
+  /* Finally enable the USART. */
+  usart_enable(SERIAL_USART);
+
+  nvic_enable_irq(SERIAL_USART_IRQ);
+
 #else
   // Set baud rate
   #if BAUD_RATE < 57600
@@ -112,14 +109,14 @@ void serial_init()
   #endif
   UBRR0H = UBRR0_value >> 8;
   UBRR0L = UBRR0_value;
-            
+
   // enable rx and tx
   UCSR0B |= 1<<RXEN0;
   UCSR0B |= 1<<TXEN0;
-	
+
   // enable interrupt on complete reception of a byte
   UCSR0B |= 1<<RXCIE0;
-	  
+
   // defaults to 8-bit, no parity, 1 stop bit
 #endif
 }
@@ -142,7 +139,7 @@ void serial_write(uint8_t data) {
   serial_tx_buffer[serial_tx_buffer_head] = data;
   serial_tx_buffer_head = next_head;
 #ifdef NUCLEO
-	usart_enable_tx_interrupt(USART2);
+  usart_enable_tx_interrupt(SERIAL_USART);
 #else
   // Enable Data Register Empty Interrupt to make sure tx-streaming is running
   UCSR0B |=  (1 << UDRIE0); 
@@ -177,48 +174,48 @@ uint8_t serial_read()
 }
 
 #ifdef NUCLEO
-__attribute__( ( long_call, section(".ramcode") ) )
-void usart2_isr(void)
+void SERIAL_USART_ISR(void)
 {
 #ifndef USE_RX_DMA
-	if(((USART_SR(USART2) & USART_SR_RXNE)  & USART_CR1(USART2)) != 0)
-	{		
-	  uint8_t data = (uint8_t)USART_DR(USART2) & USART_DR_MASK;//usart_recv(USART2);
-	  uint32_t next_head;
-	  
-	  // Pick off realtime command characters directly from the serial stream. These characters are
-	  // not passed into the buffer, but these set system state flag bits for realtime execution.
-	  switch (data) {
-		case CMD_STATUS_REPORT: bit_true_atomic(sys_rt_exec_state, EXEC_STATUS_REPORT); break; // Set as true
-		case CMD_CYCLE_START:   bit_true_atomic(sys_rt_exec_state, EXEC_CYCLE_START); break; // Set as true
-		case CMD_FEED_HOLD:     bit_true_atomic(sys_rt_exec_state, EXEC_FEED_HOLD); break; // Set as true
-		case CMD_SAFETY_DOOR:   bit_true_atomic(sys_rt_exec_state, EXEC_SAFETY_DOOR); break; // Set as true
-		case CMD_RESET:         mc_reset(); break; // Call motion control reset routine.
-		default: // Write character to buffer    
-		  next_head = serial_rx_buffer_head + 1;
-		  if (next_head == RX_BUFFER_SIZE) { next_head = 0; }
-		
-		  // Write data to buffer unless it is full.
-		  if (next_head != serial_rx_buffer_tail) {
-			serial_rx_buffer[serial_rx_buffer_head] = data;
-			serial_rx_buffer_head = next_head;
-		  }
-	  }
-	}
-#endif //USE_RX_DMA
-	if(((USART_SR(USART2) & USART_SR_TXE)  & USART_CR1(USART2)) != 0)
-	{
-		uint8_t tail = serial_tx_buffer_tail; // Temporary serial_tx_buffer_tail (to optimize for volatile)
+  if(((USART_SR(SERIAL_USART) & USART_SR_RXNE)  & USART_CR1(SERIAL_USART)) != 0)
+  {
+    uint8_t data = (uint8_t)(usart_recv(SERIAL_USART));
+    uint32_t next_head;
 
-		// Send a byte from the buffer	
-		USART_DR(USART2) = (((uint16_t)serial_tx_buffer[tail]) & USART_DR_MASK);
-		// Update tail position
-		tail++;
-		if (tail == TX_BUFFER_SIZE) { tail = 0; }
-		serial_tx_buffer_tail = tail;
-		// Turn off Data Register Empty Interrupt to stop tx-streaming if this concludes the transfer
-		if (tail == serial_tx_buffer_head) { USART_CR1(USART2) &= ~USART_CR1_TXEIE; }
-	}
+    // Pick off realtime command characters directly from the serial stream. These characters are
+    // not passed into the buffer, but these set system state flag bits for realtime execution.
+    switch (data) {
+    case CMD_STATUS_REPORT: bit_true_atomic(sys_rt_exec_state, EXEC_STATUS_REPORT); break; // Set as true
+    case CMD_CYCLE_START:   bit_true_atomic(sys_rt_exec_state, EXEC_CYCLE_START); break; // Set as true
+    case CMD_FEED_HOLD:     bit_true_atomic(sys_rt_exec_state, EXEC_FEED_HOLD); break; // Set as true
+    case CMD_SAFETY_DOOR:   bit_true_atomic(sys_rt_exec_state, EXEC_SAFETY_DOOR); break; // Set as true
+    case CMD_RESET:         mc_reset(); break; // Call motion control reset routine.
+    default: // Write character to buffer
+      next_head = serial_rx_buffer_head + 1;
+      if (next_head == RX_BUFFER_SIZE) { next_head = 0; }
+
+      // Write data to buffer unless it is full.
+      if (next_head != serial_rx_buffer_tail) {
+      serial_rx_buffer[serial_rx_buffer_head] = data;
+      serial_rx_buffer_head = next_head;
+      }
+    }
+  }
+#endif //USE_RX_DMA
+  if(((USART_SR(SERIAL_USART) & USART_SR_TXE)  & USART_CR1(SERIAL_USART)) != 0)
+  {
+    uint8_t tail = serial_tx_buffer_tail; // Temporary serial_tx_buffer_tail (to optimize for volatile)
+
+    // Send a byte from the buffer
+    usart_send(SERIAL_USART, ((uint16_t)serial_tx_buffer[tail]));
+
+    // Update tail position
+    tail++;
+    if (tail == TX_BUFFER_SIZE) { tail = 0; }
+    serial_tx_buffer_tail = tail;
+    // Turn off Data Register Empty Interrupt to stop tx-streaming if this concludes the transfer
+    if (tail == serial_tx_buffer_head) { USART_CR1(SERIAL_USART) &= ~USART_CR1_TXEIE; }
+  }
 }
 #else
 // Data Register Empty Interrupt handler
@@ -236,7 +233,7 @@ ISR(SERIAL_UDRE)
     } else
   #endif
   { 
-    // Send a byte from the buffer	
+    // Send a byte from the buffer
     UDR0 = serial_tx_buffer[tail];
   
     // Update tail position
@@ -300,74 +297,66 @@ void serial_reset_read_buffer()
 #ifdef USE_RX_DMA
 void serial_rx_dma_init(void)
 {
-	/* Enable clocks for DMA1. */
-	rcc_periph_clock_enable(RCC_DMA1);
+  /* Enable clocks for DMA1. */
+  rcc_periph_clock_enable(SERIAL_DMA_RCC);
 
-	/* Disable DMA stream and reset it. */
-	dma_disable_stream(DMA1, DMA_STREAM5);
-	dma_stream_reset(DMA1, DMA_STREAM5);
+  /* Disable DMA channel and reset it. */
+  dma_disable_channel(SERIAL_DMA, SERIAL_DMA_STREAM);
+  dma_channel_reset(SERIAL_DMA, SERIAL_DMA_STREAM);
 
-	/* DMA stream settings. */
-	dma_set_transfer_mode(DMA1, DMA_STREAM5, DMA_SxCR_DIR_PERIPHERAL_TO_MEM);
-	dma_set_memory_size(DMA1, DMA_STREAM5, DMA_SxCR_MSIZE_8BIT);
-	dma_set_peripheral_size(DMA1, DMA_STREAM5, DMA_SxCR_PSIZE_8BIT);
-	dma_enable_memory_increment_mode(DMA1, DMA_STREAM5);
-	dma_disable_peripheral_increment_mode(DMA1, DMA_STREAM5);
-	dma_enable_circular_mode(DMA1, DMA_STREAM5);
-	dma_channel_select(DMA1, DMA_STREAM5, DMA_SxCR_CHSEL_4);
-	dma_set_memory_burst(DMA1, DMA_STREAM5, DMA_SxCR_MBURST_SINGLE);
-	dma_set_peripheral_burst(DMA1, DMA_STREAM5, DMA_SxCR_PBURST_SINGLE);
-	dma_set_initial_target(DMA1, DMA_STREAM5, (uint8_t)0);
-	dma_disable_double_buffer_mode(DMA1, DMA_STREAM5);
-	dma_set_dma_flow_control(DMA1, DMA_STREAM5); //unsure about this
-	dma_enable_direct_mode(DMA1, DMA_STREAM5);
-	dma_set_peripheral_address(DMA1, DMA_STREAM5, (uint32_t)(USART2_BASE+0x04));
-	dma_set_memory_address(DMA1, DMA_STREAM5, (uint32_t)(&serial_rx_dma_data));
-	dma_set_number_of_data(DMA1, DMA_STREAM5, (uint16_t)1);
+  /* DMA stream settings. */
+  dma_set_read_from_peripheral(SERIAL_DMA, SERIAL_DMA_STREAM);
+  dma_set_memory_size(SERIAL_DMA, SERIAL_DMA_STREAM, DMA_CCR_MSIZE_8BIT);
+  dma_set_peripheral_size(SERIAL_DMA, SERIAL_DMA_STREAM, DMA_CCR_PSIZE_8BIT);
+  dma_enable_memory_increment_mode(SERIAL_DMA, SERIAL_DMA_STREAM);
+  dma_disable_peripheral_increment_mode(SERIAL_DMA, SERIAL_DMA_STREAM);
+  dma_enable_circular_mode(SERIAL_DMA, SERIAL_DMA_STREAM);
+  dma_set_peripheral_address(SERIAL_DMA, SERIAL_DMA_STREAM, (uint32_t)(&(USART_RDR(SERIAL_USART_BASE))));
+  dma_set_memory_address(SERIAL_DMA, SERIAL_DMA_STREAM, (uint32_t)(&serial_rx_dma_data));
+  dma_set_number_of_data(SERIAL_DMA, SERIAL_DMA_STREAM, (uint16_t)1);
 
-	/* Clear transfer complete interrupt flag */
-	dma_clear_interrupt_flags(DMA1, DMA_STREAM5, DMA_TCIF);
-	/* Enable Transfer Complete interrupt for real-time commands. */
-	dma_enable_transfer_complete_interrupt(DMA1, DMA_STREAM5);
+  /* Clear transfer complete interrupt flag */
+  dma_clear_interrupt_flags(SERIAL_DMA, SERIAL_DMA_STREAM, DMA_TCIF);
+  /* Enable Transfer Complete interrupt for real-time commands. */
+  dma_enable_transfer_complete_interrupt(SERIAL_DMA, SERIAL_DMA_STREAM);
 
-	/* Enable DMA stream. */
-	dma_enable_stream(DMA1, DMA_STREAM5);
+  /* Enable DMA stream. */
+  dma_enable_channel(SERIAL_DMA, SERIAL_DMA_STREAM);
 
-	nvic_enable_irq(NVIC_DMA1_STREAM5_IRQ);
+  nvic_enable_irq(SERIAL_DMA_IRQ);
 }
 
-__attribute__( ( long_call, section(".ramcode") ) )
-void dma1_stream5_isr()
+void SERIAL_DMA_ISR()
 {
-	/* Clear transfer complete interrupt flag */
-	DMA_HIFCR(DMA1) = (DMA_TCIF << DMA_ISR_OFFSET(DMA_STREAM5));
+  /* Clear transfer complete interrupt flag */
+  dma_clear_interrupt_flags(SERIAL_DMA, SERIAL_DMA_STREAM, DMA_TCIF);
 
     switch (serial_rx_dma_data)
     {
-   		case CMD_STATUS_REPORT:
-   			bit_true_atomic(sys_rt_exec_state, EXEC_STATUS_REPORT); // Set as true
-   			break;
-   		case CMD_CYCLE_START:
-   			bit_true_atomic(sys_rt_exec_state, EXEC_CYCLE_START); // Set as true
-			break;
-   		case CMD_FEED_HOLD:
-   			bit_true_atomic(sys_rt_exec_state, EXEC_FEED_HOLD); // Set as true
-			break;
-   		case CMD_SAFETY_DOOR:
-   			bit_true_atomic(sys_rt_exec_state, EXEC_SAFETY_DOOR); // Set as true
-			break;
-   		case CMD_RESET:
-   			mc_reset(); // Call motion control reset routine.
-			break;
-   		default:
-   			serial_rx_buffer[serial_rx_buffer_head] = serial_rx_dma_data;
+       case CMD_STATUS_REPORT:
+         bit_true_atomic(sys_rt_exec_state, EXEC_STATUS_REPORT); // Set as true
+         break;
+       case CMD_CYCLE_START:
+         bit_true_atomic(sys_rt_exec_state, EXEC_CYCLE_START); // Set as true
+      break;
+       case CMD_FEED_HOLD:
+         bit_true_atomic(sys_rt_exec_state, EXEC_FEED_HOLD); // Set as true
+      break;
+       case CMD_SAFETY_DOOR:
+         bit_true_atomic(sys_rt_exec_state, EXEC_SAFETY_DOOR); // Set as true
+      break;
+       case CMD_RESET:
+         mc_reset(); // Call motion control reset routine.
+      break;
+       default:
+         serial_rx_buffer[serial_rx_buffer_head] = serial_rx_dma_data;
 
-   			serial_rx_buffer_head++;
-			if (serial_rx_buffer_head == RX_BUFFER_SIZE)
-			{
-				serial_rx_buffer_head = 0;
-			}
-   			break;
+         serial_rx_buffer_head++;
+      if (serial_rx_buffer_head == RX_BUFFER_SIZE)
+      {
+        serial_rx_buffer_head = 0;
+      }
+         break;
     }
 }
 #endif

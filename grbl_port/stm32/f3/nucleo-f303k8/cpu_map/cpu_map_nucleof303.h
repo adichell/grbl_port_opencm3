@@ -42,14 +42,14 @@
 #define GRBL_PLATFORM "NucleoF303"
 
 #define NUCLEO // Nucleo
-//#define USE_RX_DMA
+#define USE_RX_DMA
 
-#ifdef USE_RX_DMA
+#ifdef  USE_RX_DMA
 #define SERIAL_DMA              DMA1
 #define SERIAL_DMA_RCC          RCC_DMA1
-#define SERIAL_DMA_STREAM       DMA_STREAM5
-#define SERIAL_DMA_ISR          dma1_stream5_isr
-#define SERIAL_DMA_IRQ          NVIC_DMA1_STREAM5_IRQ
+#define SERIAL_DMA_STREAM       DMA_CHANNEL6
+#define SERIAL_DMA_ISR          dma1_channel6_isr
+#define SERIAL_DMA_IRQ          NVIC_DMA1_CHANNEL6_IRQ
 #endif
 
 #define SERIAL_USART            USART2
