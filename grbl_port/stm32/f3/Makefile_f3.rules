@@ -78,7 +78,7 @@ SCRIPT_DIR	= $(OPENCM3_DIR)/scripts
 ###############################################################################
 # C flags
 
-override CFLAGS		+= -O0 #-g
+override CFLAGS		+= -O0 -g
 override CFLAGS		+= -Wextra -Wshadow -Wimplicit-function-declaration
 override CFLAGS		+= -Wredundant-decls -Wmissing-prototypes -Wstrict-prototypes
 override CFLAGS		+= -fno-common

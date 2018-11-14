@@ -10,12 +10,13 @@ import os
 import subprocess
 import shutil
 import glob
+import logging
 
 def form_compile_flags(flags_line):
     result_line = ""
     name_line = ""
     flags = flags_line.split(' ')
-    # print flags
+    logging.debug(flags)
 
     #Calculate final line
     for fl in flags:
@@ -31,8 +32,8 @@ def form_compile_flags(flags_line):
             result_line += 'CFLAGS+=-D' + fl + ' '
             name_line += '_' + fl
 
-    print result_line ##debug print
-    print name_line ##debug print
+    logging.debug(result_line) ##debug print
+    logging.debug(name_line) ##debug print
 
     return [result_line, name_line] 
 
@@ -40,8 +41,8 @@ def get_files_by_name2(regex):
     list_paths = []
     list_subpaths = []
     for name in sorted(glob.glob(regex)):
-        ##print os.path.abspath(name)
-        ##print name.split(os.sep)[-3]
+        logging.debug(os.path.abspath(name))
+        logging.debug(name.split(os.sep)[-3])
         list_paths.append(os.path.abspath(name))
         list_subpaths.append(name.split(os.sep)[-3])
 
@@ -65,12 +66,13 @@ def run_command(command):
 
 
 def main(argv):
-
+    result_of_operations = 0
+    
     with open('flags_combos.txt', 'r') as myfile:
         flags_lines = [line.rstrip('\n') for line in myfile]
 
-    #print "Flags combos list: "
-    #print flags_lines
+    logging.debug("Flags combos list:")
+    logging.debug(flags_lines)
 
     if os.name == 'nt':
         ##Read the tool path list that has to be modified according to
@@ -80,8 +82,8 @@ def main(argv):
 
         print "Tools paths list: "
         print pathlist
-        ##print "Original PATH environment variable: "
-        ##print os.environ["PATH"]
+        logging.debug("Original PATH environment variable: ")
+        logging.debug(os.environ["PATH"])
         os.environ["PATH"] = os.pathsep.join(pathlist) + os.pathsep + os.environ["PATH"]    
     elif os.name == 'posix':
         ##Read the tool path list that has to be modified according to
@@ -89,32 +91,32 @@ def main(argv):
         with open('tools_paths_unix.txt', 'r') as myfile:
             pathlist = [line.rstrip('\n') for line in myfile]
 
-        print "Tools paths list: "
-        print pathlist
-        ##print "Original PATH environment variable: "
-        ##print os.environ["PATH"]
+        logging.info("Tools paths list: ")
+        logging.info(pathlist)
+
         os.environ["PATH"] = os.pathsep.join(pathlist) + os.pathsep + os.environ["PATH"]
 
-    print "Modified PATH environment variable: "
-    print os.environ["PATH"]
+    logging.debug("Modified PATH environment variable: ")
+    logging.debug(os.environ["PATH"])
 
     
 
     dirname = os.path.dirname(os.path.abspath(__file__))
     lib_dirname = os.path.join(dirname, ('..' + os.sep + 'libopencm3' + os.sep + 'lib'))
-    print dirname
-    print lib_dirname
+    logging.debug(dirname)
+    logging.debug(lib_dirname)
 
     os.chdir('..')
 
     ## Create Artifacts folder if it doesn't exist.
     artifacts_folder = os.path.join(dirname, 'artifacts_built')
-    print artifacts_folder #debug print
+    logging.debug(artifacts_folder)
     if (os.path.isdir(artifacts_folder)):
-        print 'Artifacts folder exists already'
+        logging.debug('Artifacts folder exists already')
     else:
-        print 'Artifacts folder did not exists'
+        logging.debug('Artifacts folder did not exists')
         os.mkdir(artifacts_folder)
+        logging.debug('Artifacts folder created')
 
     ## Clean Artifacts folder removing previous compilation files.
     for file in glob.glob(artifacts_folder + os.sep + '*.bin'):
@@ -130,17 +132,17 @@ def main(argv):
 
     if check_lib_flag == 0:
         externalCommand = 'make clean'
-        #result = subprocess.Popen(externalCommand,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
         print "Executing command : " + externalCommand
-        #print result
         for line in run_command(externalCommand):
+            if "error" in line:
+                result_of_operations = -1
             print line
 
         externalCommand = 'make lib'
-        #result = subprocess.Popen(externalCommand,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
         print "Executing command : " + externalCommand
-        #print result
         for line in run_command(externalCommand):
+            if "error" in line:
+                result_of_operations = -1
             print line
 
     ## Execute various compilations passing defines
@@ -156,29 +158,33 @@ def main(argv):
         result = subprocess.Popen(externalCommand,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
         print "Executing command : " + externalCommand
         print result
+        if "error" in result:
+            result_of_operations = -1
 
         # ... and build
         externalCommand = 'make grbl '+define_line+' '
         print "Executing command : " + externalCommand
         for line in run_command(externalCommand):
+            if "error" in line:
+                result_of_operations = -1
             print line
 
         build_filepath = '..' + os.sep + 'grbl_port' + os.sep + 'stm32' + os.sep + '*' + os.sep + '*' + os.sep + '*' + os.sep + 'main*.bin'
         (old_file_names,file_name_subpaths)=get_files_by_name2(os.path.join(dirname, build_filepath))
-        print old_file_names
-        print file_name_subpaths
+        logging.info(old_file_names)
+        logging.info(file_name_subpaths)
 
         ## Copy and rename compiled file into the artifacts folder
         for ofn,fns in zip(old_file_names,file_name_subpaths):
-            #print artifacts_folder #debug print
+            logging.debug(artifacts_folder)
             old_file_name = os.path.join(dirname, ofn)
             new_file_name = os.path.join(artifacts_folder,('gocm3_' + fns + name_line + '.bin'))
-            print new_file_name #debug print
+            logging.info(new_file_name)
             shutil.copy(old_file_name, new_file_name)
 
     print "Compile script execution ended."
 
-    pass
+    sys.exit(result_of_operations)
 
 if __name__ == "__main__":
     main(sys.argv)
