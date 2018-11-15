@@ -26,7 +26,7 @@
 /* GOCM3 versioning Major.minor.revision + Build Date & Time */
 #define xstr(s) str(s)
 #define str(s) #s
-#ifdef(VER)
+#ifdef VER
 #define GOCM3_VERSION xstr(VER)
 #else
 #define GOCM3_VERSION "0.0.0"
