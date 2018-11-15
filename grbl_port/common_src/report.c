@@ -153,7 +153,7 @@ void report_feedback_message(uint8_t message_code)
 // Welcome message
 void report_init_message()
 {
-  printPgmString(PSTR("\r\nGrbl " GRBL_VERSION " ['$' for help]\r\n"));
+  printPgmString(PSTR("\r\nGRBL Open CM3 " GOCM3_VERSION " ['$' for help]\r\n"));
 }
 
 // Grbl help message
@@ -410,7 +410,7 @@ void report_startup_line(uint8_t n, char *line)
 // Prints build info line
 void report_build_info(char *line)
 {
-  printPgmString(PSTR("[Version: " GRBL_VERSION " - Build date: " GRBL_VERSION_BUILD " "));
+  printPgmString(PSTR("[Version: " GOCM3_VERSION " - Build date: " GOCM3_VERSION_BUILD " "));
   printString(line);
   printPgmString(PSTR("]\r\n"));
 }

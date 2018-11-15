@@ -22,16 +22,14 @@
 #ifndef GRBL_H
 #define GRBL_H
 
-// Grbl versioning system
-#define GRBL_VERSION "0.9j"
-#define GRBL_VERSION_BUILD __DATE__" "__TIME__
+// GOCM3 versioning Major.minor.revision
+#define GOCM3_VERSION "0.1.0"
+#define GOCM3_VERSION_BUILD __DATE__" "__TIME__
 
 #include "config.h"
 #include "cpu_map.h"
 // Define standard libraries used by Grbl.
 #ifdef NUCLEO
-#include <libopencm3/cm3/nvic.h>
-#include <libopencmsis/core_cm3.h>
 #elif defined(CPU_MAP_ATMEGA328P) || defined(CPU_MAP_ATMEGA2560)
 #include <avr/io.h>
 #include <avr/pgmspace.h>

@@ -20,6 +20,7 @@
 
 /* This cpu_map file serves as a central pin mapping settings file for ST Nucleo F103 */
 
+#include <libopencmsis/core_cm3.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/exti.h>

@@ -20,6 +20,7 @@
 
 /* This cpu_map file serves as a central pin mapping settings file for ST Nucleo F303 */
 
+#include <libopencmsis/core_cm3.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/exti.h>
@@ -256,7 +257,7 @@
 #define PROBE_PIN           GPIOA_IDR
 #define PROBE_PORT          GPIOA_ODR
 #define PROBE_PU            GPIOA_PUPDR
-#define PROBE_BIT           6                    // NucleoF303 Digital PA6
+#define PROBE_BIT           7                    // NucleoF303 Digital PA7
 #define PROBE_PU_MASK       (0x1<<(PROBE_BIT*2))
 #define PROBE_PU_RESET_MASK (0x3<<(PROBE_BIT*2))
 #define PROBE_MASK          (1<<PROBE_BIT)
