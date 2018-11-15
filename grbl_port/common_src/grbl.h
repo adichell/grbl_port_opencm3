@@ -22,8 +22,15 @@
 #ifndef GRBL_H
 #define GRBL_H
 
-// GOCM3 versioning Major.minor.revision
-#define GOCM3_VERSION "0.1.0"
+
+/* GOCM3 versioning Major.minor.revision + Build Date & Time */
+#define xstr(s) str(s)
+#define str(s) #s
+#ifdef(VER)
+#define GOCM3_VERSION xstr(VER)
+#else
+#define GOCM3_VERSION "0.0.0"
+#endif
 #define GOCM3_VERSION_BUILD __DATE__" "__TIME__
 
 #include "config.h"
