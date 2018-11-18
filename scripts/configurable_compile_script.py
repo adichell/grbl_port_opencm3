@@ -67,7 +67,7 @@ def run_command(command):
 
 
 #def main(argv):
-def compile(flagsFile, toolPathsFile, verbosity_string):
+def compile(flagsFile, toolPathsFile, verbosity, versionString):
     result_of_operations = 0
 
     print "Compile script execution started."
@@ -143,7 +143,10 @@ def compile(flagsFile, toolPathsFile, verbosity_string):
         [define_line, name_line]  = form_compile_flags(elem)
 
         ## Make compilation verbose if there is a DEBUG logging level ##
-        define_line += verbosity_string
+        define_line += verbosity
+
+        ## Make compilation verbose if there is a DEBUG logging level ##
+        define_line += versionString
 
         # Clean ...
         externalCommand = 'make clean_grbl'
@@ -183,6 +186,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Configurable compilation script start.')
     parser.add_argument('-f', '--flagsFile', help='File that contains the compilation flags to be used. Every line is a build type.', default='flags_combos.txt')
     parser.add_argument('-t', '--toolPathsFile', help='File that contains the paths of the tools to use to build the application. Every line is a tool path.')
+    parser.add_argument('-maj', '--majorVersion', type=int, default=0, help='Version MAJOR number')
+    parser.add_argument('-min', '--minorVersion', type=int, default=1, help='Version minor number')
+    parser.add_argument('-bui', '--buildVersion', type=int, default=0, help='Version build number')
     parser.add_argument('-l', '--logLevel', help='Logging level.')
 
     args = parser.parse_args()
@@ -195,7 +201,9 @@ if __name__ == "__main__":
     if(args.toolPathsFile):
         toolPathsFile = args.toolPathsFile
 
-    verbosity_string = ''
+    versionString = 'VER=' + str(args.majorVersion) + '.' + str(args.minorVersion) + '.' + str(args.buildVersion)
+
+    verbosity = ''
 
     # assuming loglevel is bound to the string value obtained from the
     # command line argument. Convert to upper case to allow the user to
@@ -208,4 +216,4 @@ if __name__ == "__main__":
         if numeric_level < 20 :
             verbosity_string = ' V=1'
 
-    compile(args.flagsFile, toolPathsFile, verbosity_string)
+    compile(args.flagsFile, toolPathsFile, verbosity, versionString)
