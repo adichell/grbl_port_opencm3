@@ -294,14 +294,14 @@
 // Define flood and mist coolant enable output pins.
 #define COOLANT_FLOOD_DDR               GPIOA_MODER
 #define COOLANT_FLOOD_PORT              GPIOA_ODR
-#define COOLANT_FLOOD_BIT               5 // NucleoF303 Digital Pin 1
+#define COOLANT_FLOOD_BIT               5 // NucleoF303 Digital Pin
 #define COOLANT_FLOOD_DDR_MASK          (1<<(COOLANT_FLOOD_BIT*2)) // All (step bits*2) because the direction/mode has 2 bits
 #define COOLANT_FLOOD_DDR_RESET_MASK    (0x3<<(COOLANT_FLOOD_BIT*2))
 #define COOLANT_FLOOD_MASK              (1<<COOLANT_FLOOD_BIT)     // COOLANT_FLOOD mask bit
 #ifdef ENABLE_M7 // Mist coolant disabled by default. See config.h to enable/disable.
 #define COOLANT_MIST_DDR               GPIOA_MODER
 #define COOLANT_MIST_PORT              GPIOA_ODR
-#define COOLANT_MIST_BIT               7 // NucleoF303 Digital Pin 2
+#define COOLANT_MIST_BIT               6 // NucleoF303 Digital Pin
 #define COOLANT_MIST_DDR_MASK          (1<<(COOLANT_MIST_BIT*2)) // All (step bits*2) because the direction/mode has 2 bits
 #define COOLANT_MIST_DDR_RESET_MASK    (0x3<<(COOLANT_MIST_BIT*2))
 #define COOLANT_MIST_MASK              (1<<COOLANT_MIST_BIT)     // COOLANT_MIST mask bit

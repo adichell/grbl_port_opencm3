@@ -11,6 +11,7 @@ import subprocess
 import shutil
 import glob
 import logging
+import argparse
 
 def form_compile_flags(flags_line):
     result_line = ""
@@ -65,41 +66,32 @@ def run_command(command):
 
 
 
-def main(argv):
+#def main(argv):
+def compile(flagsFile, toolPathsFile, verbosity_string):
     result_of_operations = 0
+
+    print "Compile script execution started."
     
-    with open('flags_combos.txt', 'r') as myfile:
+    with open(flagsFile, 'r') as myfile:
         flags_lines = [line.rstrip('\n') for line in myfile]
 
     logging.debug("Flags combos list:")
     logging.debug(flags_lines)
 
-    if os.name == 'nt':
-        ##Read the tool path list that has to be modified according to
-        ##the locally installed versions of the used tools.
-        with open('tools_paths_windows.txt', 'r') as myfile:
-            pathlist = [line.rstrip('\n') for line in myfile]
+    ##Read the tool path list that has to be modified according to
+    ##the locally installed versions of the used tools.
+    with open(toolPathsFile, 'r') as myfile:
+        pathlist = [line.rstrip('\n') for line in myfile]
 
-        print "Tools paths list: "
-        print pathlist
-        logging.debug("Original PATH environment variable: ")
-        logging.debug(os.environ["PATH"])
-        os.environ["PATH"] = os.pathsep.join(pathlist) + os.pathsep + os.environ["PATH"]    
-    elif os.name == 'posix':
-        ##Read the tool path list that has to be modified according to
-        ##the locally installed versions of the used tools.
-        with open('tools_paths_unix.txt', 'r') as myfile:
-            pathlist = [line.rstrip('\n') for line in myfile]
-
-        logging.info("Tools paths list: ")
-        logging.info(pathlist)
-
-        os.environ["PATH"] = os.pathsep.join(pathlist) + os.pathsep + os.environ["PATH"]
-
-    logging.debug("Modified PATH environment variable: ")
+    logging.debug("Tools paths list: ")
+    logging.debug(pathlist)
+    logging.debug("Original PATH environment variable: ")
     logging.debug(os.environ["PATH"])
 
+    os.environ["PATH"] = os.pathsep.join(pathlist) + os.pathsep + os.environ["PATH"]    
     
+    logging.debug("Modified PATH environment variable: ")
+    logging.debug(os.environ["PATH"])
 
     dirname = os.path.dirname(os.path.abspath(__file__))
     lib_dirname = os.path.join(dirname, ('..' + os.sep + 'libopencm3' + os.sep + 'lib'))
@@ -150,8 +142,8 @@ def main(argv):
 
         [define_line, name_line]  = form_compile_flags(elem)
 
-        ## Make it verbose:
-        #define_line += ' V=1'
+        ## Make compilation verbose if there is a DEBUG logging level ##
+        define_line += verbosity_string
 
         # Clean ...
         externalCommand = 'make clean_grbl'
@@ -160,6 +152,7 @@ def main(argv):
         print result
         if "error" in result:
             result_of_operations = -1
+
 
         # ... and build
         externalCommand = 'make grbl '+define_line+' '
@@ -187,5 +180,32 @@ def main(argv):
     sys.exit(result_of_operations)
 
 if __name__ == "__main__":
-    main(sys.argv)
+    parser = argparse.ArgumentParser(description='Configurable compilation script start.')
+    parser.add_argument('-f', '--flagsFile', help='File that contains the compilation flags to be used. Every line is a build type.', default='flags_combos.txt')
+    parser.add_argument('-t', '--toolPathsFile', help='File that contains the paths of the tools to use to build the application. Every line is a tool path.')
+    parser.add_argument('-l', '--logLevel', help='Logging level.')
 
+    args = parser.parse_args()
+
+    if os.name == 'nt':
+        toolPathsFile = 'tools_paths_windows.txt'
+    elif os.name == 'posix':
+        toolPathsFile = 'tools_paths_unix.txt'
+
+    if(args.toolPathsFile):
+        toolPathsFile = args.toolPathsFile
+
+    verbosity_string = ''
+
+    # assuming loglevel is bound to the string value obtained from the
+    # command line argument. Convert to upper case to allow the user to
+    # specify --log=DEBUG or --log=debug
+    if (args.logLevel):
+        numeric_level = getattr(logging, args.logLevel.upper(), None)
+        if not isinstance(numeric_level, int):
+            raise ValueError('Invalid log level: %s' % loglevel)
+        logging.basicConfig(level=numeric_level)
+        if numeric_level < 20 :
+            verbosity_string = ' V=1'
+
+    compile(args.flagsFile, toolPathsFile, verbosity_string)
