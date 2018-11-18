@@ -126,6 +126,8 @@
 #define STEP_YZ_DDR_RESET_MASK  ((0x3<<(Y_STEP_BIT*2))|(0x3<<(Z_STEP_BIT*2)))
 #define STEP_MASK_YZ      ((1<<Y_STEP_BIT)|(1<<Z_STEP_BIT))         // Y-Z step mask bits
 
+#define STEP_MASK (STEP_MASK_X | STEP_MASK_YZ)
+
 // Define step direction output pins. NOTE: All direction pins must be on the same port.
 #define DIRECTION_Z_DDR       GPIOA_MODER
 #define DIRECTION_Z_PORT      GPIOA_ODR
