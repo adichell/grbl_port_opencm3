@@ -90,7 +90,7 @@
 #define SPINDLE_TIMER_CHAN     TIM_OC1
 #define SPINDLE_TIMER_PWM_TYPE TIM_OCM_PWM1
 #define SPINDLE_GPIO_GROUP     GPIOB
-#define SPINDLE_GPIO_AF        GPIO_AF10
+#define SPINDLE_GPIO_AF        GPIO_AF1
 #define SPINDLE_GPIO           GPIO4
 #define SPINDLE_TIMER_BUS_FREQ rcc_apb2_frequency
 
