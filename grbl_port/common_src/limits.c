@@ -50,17 +50,17 @@ void limits_init()
     	/*reset pending exti events */
     	exti_reset_request(LIMIT_INT_vect);
     	/*reset pending exti interrupts */
-    	nvic_clear_pending_irq(LIMIT_INT_X);
-    	nvic_clear_pending_irq(LIMIT_INT_Y);
-    	nvic_clear_pending_irq(LIMIT_INT_Z);
+    	nvic_clear_pending_irq(LIMIT_X_INT);
+    	nvic_clear_pending_irq(LIMIT_Y_INT);
+    	nvic_clear_pending_irq(LIMIT_Z_INT);
     	exti_select_source(LIMIT_X_EXTI, LIMIT_X_GPIO);
     	exti_select_source(LIMIT_Y_EXTI, LIMIT_Y_GPIO);
     	exti_select_source(LIMIT_Z_EXTI, LIMIT_Z_GPIO);
     	exti_enable_request(LIMIT_INT_vect);
         exti_set_trigger(LIMIT_INT_vect, EXTI_TRIGGER_FALLING);
-        nvic_enable_irq(LIMIT_INT_X);// Enable Limits pins Interrupt
-        nvic_enable_irq(LIMIT_INT_Y);// Enable Limits pins Interrupt
-        nvic_enable_irq(LIMIT_INT_Z);// Enable Limits pins Interrupt
+        nvic_enable_irq(LIMIT_X_INT);// Enable Limits pins Interrupt
+        nvic_enable_irq(LIMIT_Y_INT);// Enable Limits pins Interrupt
+        nvic_enable_irq(LIMIT_Z_INT);// Enable Limits pins Interrupt
     } else {
         limits_disable(); 
     }
@@ -99,9 +99,12 @@ void limits_disable()
 {
 #ifdef NUCLEO
     /* Disable Limits pins Interrupt */
-    nvic_disable_irq(LIMIT_INT_X);
-    nvic_disable_irq(LIMIT_INT_Y);
-    nvic_disable_irq(LIMIT_INT_Z);
+    nvic_disable_irq(LIMIT_X_INT);
+    nvic_disable_irq(LIMIT_Y_INT);
+    nvic_disable_irq(LIMIT_Z_INT);
+    nvic_clear_pending_irq(LIMIT_X_INT);
+    nvic_clear_pending_irq(LIMIT_Y_INT);
+    nvic_clear_pending_irq(LIMIT_Z_INT);
 #else
     LIMIT_PCMSK &= ~LIMIT_MASK;  // Disable specific pins of the Pin Change Interrupt
     PCICR &= ~(1 << LIMIT_INT);  // Disable Pin Change Interrupt
@@ -155,7 +158,7 @@ uint8_t limits_get_state()
 #ifdef NUCLEO
 void LIMIT_X_ISR()
 {
-    exti_reset_request(LIMIT_X_EXTI);
+    exti_reset_request(LIMIT_X_EXTI_CLEAR);
     nvic_clear_pending_irq(LIMIT_X_INT);
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_interrupt_signalling((uint32_t)10);
@@ -186,7 +189,7 @@ void LIMIT_X_ISR()
 #if LIMIT_Y_INT != LIMIT_X_INT
 void LIMIT_Y_ISR()
 {
-    exti_reset_request(LIMIT_Y_EXTI);
+    exti_reset_request(LIMIT_Y_EXTI_CLEAR);
     nvic_clear_pending_irq(LIMIT_Y_INT);
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_interrupt_signalling((uint32_t)10);
@@ -217,7 +220,7 @@ void LIMIT_Y_ISR()
 #if (LIMIT_Z_INT != LIMIT_X_INT) && (LIMIT_Z_INT != LIMIT_Y_INT) 
 void LIMIT_Z_ISR()
 {
-    exti_reset_request(LIMIT_Z_EXTI);
+    exti_reset_request(LIMIT_Z_EXTI_CLEAR);
     nvic_clear_pending_irq(LIMIT_Z_INT);
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_interrupt_signalling((uint32_t)10);
@@ -270,7 +273,7 @@ static void enable_debounce_timer(void)
 void LIMIT_X_ISR()
 {
     /* Clear interrupt request */
-    exti_reset_request(LIMIT_X_EXTI);
+    exti_reset_request(LIMIT_X_EXTI_CLEAR);
     nvic_clear_pending_irq(LIMIT_X_INT);
 
     enable_debounce_timer();
@@ -279,7 +282,7 @@ void LIMIT_X_ISR()
 #if LIMIT_Y_INT != LIMIT_X_INT
 void LIMIT_Y_ISR()
 {
-    exti_reset_request(LIMIT_Y_EXTI);
+    exti_reset_request(LIMIT_Y_EXTI_CLEAR);
     nvic_clear_pending_irq(LIMIT_Y_INT);
 
     enable_debounce_timer();
@@ -289,7 +292,7 @@ void LIMIT_Y_ISR()
 #if (LIMIT_Z_INT != LIMIT_X_INT) && (LIMIT_Z_INT != LIMIT_Y_INT) 
 void LIMIT_Z_ISR()
 {
-    exti_reset_request(LIMIT_Z_EXTI);
+    exti_reset_request(LIMIT_Z_EXTI_CLEAR);
     nvic_clear_pending_irq(LIMIT_Z_INT);
 
     enable_debounce_timer();
@@ -308,7 +311,7 @@ void SW_DEBOUNCE_TIMER_ISR()
   {
     WDTCSR &= ~(1<<WDIE); // Disable watchdog timer.
 #endif
-    if (sys.state != STATE_ALARM) {  // Ignore if already in alarm state. 
+    if (sys.state != STATE_HOMING && sys.state != STATE_ALARM) {  // Ignore if already in alarm state and during homing.
       if (!(sys_rt_exec_alarm)) {
         // Check limit pin state. 
         if (limits_get_state()) {

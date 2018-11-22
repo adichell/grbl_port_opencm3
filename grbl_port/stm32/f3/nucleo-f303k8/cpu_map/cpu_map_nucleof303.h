@@ -207,15 +207,12 @@
 
 #define LIMIT_MASK               (LIMIT_X_MASK | LIMIT_Y_MASK | LIMIT_Z_MASK)
 //#define INVERT_LIMIT_PIN_MASK    (LIMIT_MASK)
+#define LIMIT_X_EXTI_CLEAR       (LIMIT_X_EXTI | LIMIT_Z_EXTI)
+#define LIMIT_Y_EXTI_CLEAR       (LIMIT_Y_EXTI)
+#define LIMIT_Z_EXTI_CLEAR       (LIMIT_X_EXTI | LIMIT_Z_EXTI)
 
 /* Interrupt defines for LIMIT PINS */
 #define LIMIT_INT_vect            (LIMIT_X_EXTI | LIMIT_Y_EXTI | LIMIT_Z_EXTI)
-#define LIMIT_INT_X               NVIC_EXTI9_5_IRQ
-#define LIMIT_PCMSK_X             NVIC_EXTI9_5_IRQ
-#define LIMIT_INT_Y               NVIC_EXTI15_10_IRQ
-#define LIMIT_PCMSK_Y             NVIC_EXTI15_10_IRQ
-#define LIMIT_INT_Z               NVIC_EXTI9_5_IRQ
-#define LIMIT_PCMSK_Z             NVIC_EXTI9_5_IRQ
 
 
 // Define user-control CONTROLs (cycle start, reset, feed hold) input pins.
