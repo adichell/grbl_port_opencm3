@@ -111,46 +111,53 @@
 //#define LINE_BUFFER_SIZE	100
 
 // Define step pulse output pins. NOTE: All step bit pins must be on the same port.
-#define STEP_X_DDR        GPIOA_CRH
-#define STEP_X_PORT       GPIOA_ODR
-#define X_STEP_BIT        10 // NucleoF103 Digital PA10
-#define X_STEP_BIT_REL    2
-#define STEP_MASK_X_DDR   (0x00000001<<(X_STEP_BIT_REL*4 + 2)) // All (step bits*4 + 2) because the direction/mode has 2 bits
-#define STEP_X_DDR_RESET_MASK   (0x00000003<<(X_STEP_BIT_REL*4 + 2))
-#define STEP_MASK_X       (0x00000001<<X_STEP_BIT)     // X step mask bit
+#define STEP_X_DDR            GPIOA_CRH
+#define STEP_X_PORT           GPIOA_ODR
+#define X_STEP_BIT            10 // NucleoF103 Digital PA10
+#define X_STEP_BIT_REL        2
+#define STEP_MASK_X_DDR       (0x00000001<<(X_STEP_BIT_REL*4 + 2)) // All (step bits*4 + 2) because the direction/mode has 2 bits
+#define STEP_X_DDR_RESET_MASK (0x00000003<<(X_STEP_BIT_REL*4 + 2))
+#define STEP_MASK_X           (0x00000001<<X_STEP_BIT)     // X step mask bit
 
-#define STEP_YZ_DDR       GPIOB_CRL
-#define STEP_YZ_PORT      GPIOB_ODR
-#define Y_STEP_BIT        3 // NucleoF103 Digital PB3
-#define Z_STEP_BIT        5 // NucleoF103 Digital PB5
-#define STEP_MASK_YZ_DDR  ((0x00000001<<(Y_STEP_BIT*4 + 2))|(0x00000001<<(Z_STEP_BIT*4 + 2))) // All (step bits*4 + 2) because the direction/mode has 2 bits
-#define STEP_YZ_DDR_RESET_MASK  ((0x00000003<<(Y_STEP_BIT*4 + 2))|(0x00000003<<(Z_STEP_BIT*4 + 2)))
-#define STEP_MASK_YZ      ((0x00000001<<Y_STEP_BIT)|(0x00000001<<Z_STEP_BIT))         // Y-Z step mask bits
+#define STEP_Y_DDR            GPIOB_CRL
+#define STEP_Y_PORT           GPIOB_ODR
+#define Y_STEP_BIT            3 // NucleoF103 Digital PB3
+#define STEP_MASK_Y_DDR       (0x00000001<<(Y_STEP_BIT*4 + 2)) // All (step bits*4 + 2) because the direction/mode has 2 bits
+#define STEP_Y_DDR_RESET_MASK (0x00000003<<(Y_STEP_BIT*4 + 2))
+#define STEP_MASK_Y           (0x00000001<<Y_STEP_BIT)
 
-#define STEP_MASK (STEP_MASK_X | STEP_MASK_YZ)
+#define STEP_Z_DDR            GPIOB_CRL
+#define STEP_Z_PORT           GPIOB_ODR
+#define Z_STEP_BIT            5 // NucleoF103 Digital PB5
+#define STEP_MASK_Z_DDR       (0x00000001<<(Z_STEP_BIT*4 + 2)) // All (step bits*4 + 2) because the direction/mode has 2 bits
+#define STEP_Z_DDR_RESET_MASK (0x00000003<<(Y_STEP_BIT*4 + 2))
+#define STEP_MASK_Z           (0x00000001<<Y_STEP_BIT)
+
+#define STEP_MASK (STEP_MASK_X | STEP_MASK_Y | STEP_MASK_Z)
 
 // Define step direction output pins. NOTE: All direction pins must be on the same port.
-#define DIRECTION_Z_DDR       GPIOA_CRH
-#define DIRECTION_Z_PORT      GPIOA_ODR
-#define Z_DIRECTION_BIT       8   // NucleoF103 Digital PA8
-#define Z_DIRECTION_BIT_REL   0
-#define DIRECTION_MASK_Z_DDR  (0x00000001<<(Z_DIRECTION_BIT_REL*4 + 2)) // Z DIR Mask direction bits
-#define DIRECTION_Z_DDR_RESET_MASK  (0x00000003<<(Z_DIRECTION_BIT_REL*4 + 2)) // Z DIR Mask direction bits
-#define DIRECTION_MASK_Z      (0x00000001<<Z_DIRECTION_BIT) // Z DIR MASK bit
+#define DIRECTION_Z_DDR            GPIOA_CRH
+#define DIRECTION_Z_PORT           GPIOA_ODR
+#define Z_DIRECTION_BIT            8   // NucleoF103 Digital PA8
+#define Z_DIRECTION_BIT_REL        0
+#define DIRECTION_MASK_Z_DDR       (0x00000001<<(Z_DIRECTION_BIT_REL*4 + 2)) // Z DIR Mask direction bits
+#define DIRECTION_Z_DDR_RESET_MASK (0x00000003<<(Z_DIRECTION_BIT_REL*4 + 2)) // Z DIR Mask direction bits
+#define DIRECTION_MASK_Z           (0x00000001<<Z_DIRECTION_BIT) // Z DIR MASK bit
 
-#define DIRECTION_X_DDR       GPIOB_CRL
-#define DIRECTION_Y_DDR       GPIOB_CRH
-#define DIRECTION_XY_PORT      GPIOB_ODR
-#define X_DIRECTION_BIT        4  // NucleoF103 Digital PB4
-#define Y_DIRECTION_BIT        10 // NucleoF103 Digital PB10
-#define Y_DIRECTION_BIT_REL    2
-#define DIRECTION_MASK_XY_DDR  ((0x00000001<<(X_DIRECTION_BIT*4 + 2))|(0x00000001<<(Y_DIRECTION_BIT_REL*4 + 2))) // All direction bits
-#define DIRECTION_MASK_X_DDR   (0x00000001<<(X_DIRECTION_BIT*4 + 2)) // All direction bits
-#define DIRECTION_MASK_Y_DDR   (0x00000001<<(Y_DIRECTION_BIT_REL*4 + 2)) // All direction bits
-#define DIRECTION_XY_DDR_RESET_MASK  ((0x00000003<<(X_DIRECTION_BIT*4 + 2))|(0x00000003<<(Y_DIRECTION_BIT_REL*4 + 2))) // All direction bits
-#define DIRECTION_X_DDR_RESET_MASK  (0x00000003<<(X_DIRECTION_BIT*4 + 2)) // All direction bits
-#define DIRECTION_Y_DDR_RESET_MASK  (0x00000003<<(Y_DIRECTION_BIT_REL*4 + 2)) // All direction bits
-#define DIRECTION_MASK_XY      ((0x00000001<<X_DIRECTION_BIT)|(0x00000001<<Y_DIRECTION_BIT)) // XY DIR MASK bits
+#define DIRECTION_X_DDR            GPIOB_CRL
+#define DIRECTION_X_PORT           GPIOB_ODR
+#define X_DIRECTION_BIT            4  // NucleoF103 Digital PB4
+#define DIRECTION_MASK_XY_DDR      (0x00000001<<(X_DIRECTION_BIT*4 + 2))
+#define DIRECTION_X_DDR_RESET_MASK (0x00000003<<(X_DIRECTION_BIT*4 + 2))
+#define DIRECTION_MASK_X           (0x00000001<<X_DIRECTION_BIT)
+
+#define DIRECTION_Y_DDR            GPIOB_CRH
+#define DIRECTION_Y_PORT           GPIOB_ODR
+#define Y_DIRECTION_BIT            10 // NucleoF103 Digital PB10
+#define Y_DIRECTION_BIT_REL        2
+#define DIRECTION_MASK_Y_DDR       (0x00000001<<(Y_DIRECTION_BIT_REL*4 + 2))
+#define DIRECTION_Y_DDR_RESET_MASK (0x00000003<<(Y_DIRECTION_BIT_REL*4 + 2))
+#define DIRECTION_MASK_Y           (0x00000001<<Y_DIRECTION_BIT)
 
 // Define stepper driver enable/disable output pin.
 #define STEPPERS_DISABLE_DDR        GPIOA_CRH
@@ -357,9 +364,11 @@
 #define SET_STEP_DDR \
   do { \
     STEP_X_DDR &= ~STEP_X_DDR_RESET_MASK; \
-    STEP_YZ_DDR &= ~STEP_YZ_DDR_RESET_MASK; \
+    STEP_Y_DDR &= ~STEP_Y_DDR_RESET_MASK; \
+    STEP_Z_DDR &= ~STEP_Z_DDR_RESET_MASK; \
     STEP_X_DDR |= STEP_MASK_X_DDR; \
-    STEP_YZ_DDR |= STEP_MASK_YZ_DDR; \
+    STEP_Y_DDR |= STEP_MASK_Y_DDR; \
+    STEP_Z_DDR |= STEP_MASK_Z_DDR; \
   } while (0)
 
 #define SET_DIRECTION_DDR \
@@ -375,22 +384,25 @@
 #define SET_STEP_BITS(stepbits) \
   do { \
     STEP_X_PORT = (STEP_X_PORT & ~STEP_MASK_X) | (stepbits & STEP_MASK_X); \
-    STEP_YZ_PORT = (STEP_YZ_PORT & ~STEP_MASK_YZ) | (stepbits & STEP_MASK_YZ); \
+    STEP_Y_PORT = (STEP_Y_PORT & ~STEP_MASK_Y) | (stepbits & STEP_MASK_Y); \
+    STEP_Z_PORT = (STEP_Z_PORT & ~STEP_MASK_Z) | (stepbits & STEP_MASK_Z); \
   } while (0)
 
 #define SET_STEPS(stepbits) \
   do { \
     STEP_X_PORT  = (stepbits & STEP_MASK_X); \
-    STEP_YZ_PORT = (stepbits & STEP_MASK_YZ); \
+    STEP_Y_PORT = (stepbits & STEP_MASK_Y); \
+    STEP_Z_PORT = (stepbits & STEP_MASK_Z); \
   } while (0)
 
 #define SAVE_STEP_BITS(stepbits) \
-  do { st.step_bits = (STEP_X_PORT & ~STEP_MASK_X) | (STEP_YZ_PORT & ~STEP_MASK_YZ) | stepbits;} while (0)
+  do { st.step_bits = (STEP_X_PORT & ~STEP_MASK_X) | (STEP_Y_PORT & ~STEP_MASK_Y) | (STEP_Z_PORT & ~STEP_MASK_Z) | stepbits;} while (0)
 
 #define SET_DIRECTION_BITS(dirbits) \
   do { \
-    DIRECTION_Z_PORT  = (DIRECTION_Z_PORT & ~DIRECTION_MASK_Z) | (dirbits & DIRECTION_MASK_Z); \
-    DIRECTION_XY_PORT = (DIRECTION_XY_PORT & ~DIRECTION_MASK_XY) | (dirbits & DIRECTION_MASK_XY); \
+    DIRECTION_X_PORT = (DIRECTION_X_PORT & ~DIRECTION_MASK_X) | (dirbits & DIRECTION_MASK_X); \
+    DIRECTION_Y_PORT = (DIRECTION_Y_PORT & ~DIRECTION_MASK_Y) | (dirbits & DIRECTION_MASK_Y); \
+    DIRECTION_Z_PORT = (DIRECTION_Z_PORT & ~DIRECTION_MASK_Z) | (dirbits & DIRECTION_MASK_Z); \
   } while (0)
 
 #define SET_LIMITS_RCC \
