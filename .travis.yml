@@ -33,5 +33,3 @@ deploy:
   file:  $TRAVIS_BUILD_DIR/scripts/artifacts_built/*.bin
   skip_cleanup: true
   draft: true
-  on:
-    tags: true
