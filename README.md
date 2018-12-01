@@ -1,17 +1,15 @@
 # GRBL port using opencm3 libraries <span style="float:right;"><a href="https://travis-ci.org/adichell/grbl_port_opencm3" style="border-bottom:none">![Build Status](https://travis-ci.org/adichell/grbl_port_opencm3.svg?branch=master)</a></span>
 For any question/discussion use this -> [![Gitter channel](https://badges.gitter.im/libopencm3/discuss.svg)](https://gitter.im/grbl_port_opencm3/Lobby)
 
-If you want to buy me a :coffee: to keep me awake :blush: -> [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BW7PE93EGM6C6)
-
-
 # Scope  
   
 The first idea of this project was to port the GRBL code to a Cortex-M processor, using the Nucleo F401RE board, that is a cheap microcontroller (~10/15 $), but is also quite performing (84MHz 32-bit Cortex-M4 CPU and many other features).  
 In order to achieve this scope, I chose to use libopencm3 as a base library, concentrating the effort on the development/porting of the application while having a light driver access substrate.  
 I used the GRBL version 0.9 as a code base since it is a stable and vastily used version of GRBL, and then solved some issues to reproduce the same functionality on this microcontroller.  
-  
+
 Since the libopencm3 are structured to support many microcontrollers, this porting may be achieved with some effort on other popular microcontrollers.  
-And this may be a future development, hopefully with the collaboration of the community.  
+  
+<b>NEWS:</b> Added also support for Nucleo F103RB and F303K8. I have tested many functionalities on a COREXY machine using F401RE and some functionalities with F303K8.
   
 # License  
   
@@ -40,7 +38,7 @@ If you are compiling under unix environment you need your PATH to point to the g
 Then, to be able to build the application:  
 - get the repository in a folder, by cloning it or downloading it from GitHub;  
 - change directory to the main project folder  
-- get the library opencm3 in "libopencm3" sub-folder using "submodule init".  
+- get the library opencm3 in "libopencm3" sub-folder using "git submodule init".  
 - run "make bin" to compile the project and generate the binaries.  
   
 Just the "make" command is sufficient to trigger the build. The build process will start by building the lib opencm3, and then it will build the grbl applications for every microcontroller target present in the repository.  
@@ -67,3 +65,5 @@ In this case, copy the binary obtained from the building process into the mass s
 Take care, likely with this procedure only the sector used by the application will be erased. So if you have anything already written in the sectors used by the grbl parameters, the application behaviour is not guaranteed. Likely, it will find that parameters are corrupted and restore them to default values.  
   
 As an alternative method to install your application, if you are using a Windows OS, the application ST-LINK may be used to download the compiled software in flash. In this case, the ELF file may be used.  
+
+Ps: if anyone wants to buy me a :coffee: to keep me awake :blush: -> [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BW7PE93EGM6C6)
