@@ -66,4 +66,4 @@ Take care, likely with this procedure only the sector used by the application wi
   
 As an alternative method to install your application, if you are using a Windows OS, the application ST-LINK may be used to download the compiled software in flash. In this case, the ELF file may be used.  
 
-Ps: if anyone wants to buy me a :coffee: to keep me awake :blush: -> [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BW7PE93EGM6C6)
+
