@@ -211,7 +211,7 @@ if __name__ == "__main__":
     if (args.logLevel):
         numeric_level = getattr(logging, args.logLevel.upper(), None)
         if not isinstance(numeric_level, int):
-            raise ValueError('Invalid log level: %s' % loglevel)
+            raise ValueError('Invalid log level: %s' % args.logLevel)
         logging.basicConfig(level=numeric_level)
         if numeric_level < 20 :
             verbosity_string = ' V=1'

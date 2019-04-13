@@ -30,7 +30,7 @@
   #include "pwm_spindle_params_generic.h"
 
 #elif defined(PWM_SPINDLE_PARAMS_AFRO20)
-  // Grbl generic pwm spindle parameters.
+  // Grbl AFRO 20 ESC pwm spindle parameters.
   #include "pwm_spindle_params_afro20.h"
 
 #else
