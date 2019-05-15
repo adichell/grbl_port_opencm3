@@ -40,13 +40,14 @@ void limits_init()
     SET_LIMITS_RCC;
 
     SET_LIMITS_DDR;  // Set as input pins
-    #ifdef DISABLE_LIMIT_PIN_PULL_UP
+#ifdef DISABLE_LIMIT_PIN_PULL_UP
     UNSET_LIMITS_PU; // Normal low operation. Requires external pull-down.
-    #else
+#else
     SET_LIMITS_PU;   // Enable internal pull-up resistors. Normal high operation.
-    #endif
+#endif
 
-    if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE)) {
+  if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE))
+  {
     	/*reset pending exti events */
     	exti_reset_request(LIMIT_INT_vect);
     	/*reset pending exti interrupts */
@@ -61,7 +62,9 @@ void limits_init()
         nvic_enable_irq(LIMIT_X_INT);// Enable Limits pins Interrupt
         nvic_enable_irq(LIMIT_Y_INT);// Enable Limits pins Interrupt
         nvic_enable_irq(LIMIT_Z_INT);// Enable Limits pins Interrupt
-    } else {
+    }
+    else 
+    {
         limits_disable(); 
     }
 
@@ -72,11 +75,11 @@ void limits_init()
 #else
     LIMIT_DDR &= ~(LIMIT_MASK); // Set as input pins
 
-  #ifdef DISABLE_LIMIT_PIN_PULL_UP
+#ifdef DISABLE_LIMIT_PIN_PULL_UP
     LIMIT_PORT &= ~(LIMIT_MASK); // Normal low operation. Requires external pull-down.
-  #else
+#else
     LIMIT_PORT |= (LIMIT_MASK);  // Enable internal pull-up resistors. Normal high operation.
-  #endif
+#endif
 
     if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE)) {
         LIMIT_PCMSK |= LIMIT_MASK; // Enable specific pins of the Pin Change Interrupt
@@ -86,9 +89,11 @@ void limits_init()
     }
   
   #ifdef ENABLE_SOFTWARE_DEBOUNCE
+  #ifndef NUCLEO
     MCUSR &= ~(1<<WDRF);
     WDTCSR |= (1<<WDCE) | (1<<WDE);
     WDTCSR = (1<<WDP0); // Set time-out at ~32msec.
+  #endif
   #endif
 #endif //ifdef NUCLEO_F401
 }
@@ -253,6 +258,8 @@ void LIMIT_Z_ISR()
 #ifdef NUCLEO
 static void enable_debounce_timer(void)
 {
+  if(!nvic_get_irq_enabled(SW_DEBOUNCE_TIMER_IRQ))
+  {
     /* Enable SW_DEBOUNCE_TIMER clock. */
     rcc_periph_clock_enable(SW_DEBOUNCE_TIMER_RCC);
     rcc_periph_reset_pulse(SW_DEBOUNCE_TIMER_RST);
@@ -264,10 +271,16 @@ static void enable_debounce_timer(void)
     timer_set_prescaler(SW_DEBOUNCE_TIMER, (256*PSC_MUL_FACTOR)-1);// set to 1/8 Prescaler
     timer_set_period(SW_DEBOUNCE_TIMER, 0X09FF);
 
+    timer_set_oc_mode(SW_DEBOUNCE_TIMER, TIM_OC1, TIM_OCM_FROZEN);
+    timer_set_oc_value(SW_DEBOUNCE_TIMER, TIM_OC1, 0x9F0);
+
     /* Enable SW_DEBOUNCE_TIMER Stepper Driver Interrupt. */
-    timer_enable_irq(SW_DEBOUNCE_TIMER, TIM_DIER_UIE); /** Capture/compare 1 interrupt enable */
+    timer_enable_irq(SW_DEBOUNCE_TIMER, TIM_DIER_CC1IE); /** Capture/compare 1 interrupt enable */
     nvic_enable_irq(SW_DEBOUNCE_TIMER_IRQ);
+
+    timer_set_counter(SW_DEBOUNCE_TIMER,0);
     timer_enable_counter(SW_DEBOUNCE_TIMER); /* Counter enable. */
+  }
 }
 
 void LIMIT_X_ISR()
@@ -520,7 +533,7 @@ void limits_go_home(uint8_t cycle_mask)
           sys.position[A_MOTOR] = (bit_istrue(settings.dir_invert_mask,bit(X_AXIS)) ? -1 : 1) * (off_axis_position) + (bit_istrue(settings.dir_invert_mask,bit(Y_AXIS)) ? -1 : 1) * (set_axis_position);
           sys.position[B_MOTOR] = (bit_istrue(settings.dir_invert_mask,bit(X_AXIS)) ? -1 : 1) * (off_axis_position) - (bit_istrue(settings.dir_invert_mask,bit(Y_AXIS)) ? -1 : 1) * (set_axis_position);
         } else {
-          sys.position[idx] = set_axis_position;
+          sys.position[idx] = (bit_istrue(settings.dir_invert_mask,bit(Z_AXIS)) ? -1 : 1) * set_axis_position;
         }        
       #else 
         sys.position[idx] = set_axis_position;

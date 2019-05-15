@@ -51,7 +51,8 @@ void system_init()
     nvic_clear_pending_irq(FEED_HOLD_CONTROL_INT);
     nvic_clear_pending_irq(RESET_CONTROL_INT);
     nvic_clear_pending_irq(CYCLE_START_CONTROL_INT);
-    #ifdef ENABLE_SAFETY_DOOR_INPUT_PIN
+#if defined(SYSTEM_CONTROL_INTERRUPT_ENABLED)    
+#ifdef ENABLE_SAFETY_DOOR_INPUT_PIN
     nvic_clear_pending_irq(SAFETY_DOOR_CONTROL_INT);
     #endif
 
@@ -76,7 +77,7 @@ void system_init()
 #ifdef TEST_NUCLEO_EXTI_PINS
     test_initialization();
 #endif
-
+#endif //SYSTEM_CONTROL_INTERRUPT_ENABLED
 #else
     CONTROL_DDR &= ~(CONTROL_MASK); // Configure as input pins
   #ifdef DISABLE_CONTROL_PIN_PULL_UP

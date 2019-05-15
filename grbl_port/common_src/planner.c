@@ -444,7 +444,7 @@ void plan_sync_position()
       } else if (idx==Y_AXIS) { 
         pl.position[Y_AXIS] = system_convert_corexy_to_y_axis_steps(sys.position);
       } else {
-        pl.position[idx] = sys.position[idx];
+        pl.position[idx] = (bit_istrue(settings.dir_invert_mask,bit(Z_AXIS)) ? -1 : 1) * sys.position[idx];
       }
     #else
       pl.position[idx] = sys.position[idx];
