@@ -1,8 +1,8 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 __author__ = 'Angelo Di Chello'
 __copyright__ = "Copyright 2018"
 __license__ = "GPL3"
-__version__ = "0.1"
+__version__ = "0.2"
 __status__ = "Prototype"
 
 import sys
@@ -38,7 +38,7 @@ def form_compile_flags(flags_line):
 
     return [result_line, name_line] 
 
-def get_files_by_name2(regex):
+def get_files_by_name(regex):
     list_paths = []
     list_subpaths = []
     for name in sorted(glob.glob(regex)):
@@ -70,7 +70,7 @@ def run_command(command):
 def compile(flagsFile, toolPathsFile, verbosity, versionString):
     result_of_operations = 0
 
-    print "Compile script execution started."
+    logging.info("Compile script execution started.")
     
     with open(flagsFile, 'r') as myfile:
         flags_lines = [line.rstrip('\n') for line in myfile]
@@ -124,18 +124,18 @@ def compile(flagsFile, toolPathsFile, verbosity, versionString):
 
     if check_lib_flag == 0:
         externalCommand = 'make clean'
-        print "Executing command : " + externalCommand
+        logging.info("Executing command : " + externalCommand)
         for line in run_command(externalCommand):
             if "error" in line:
                 result_of_operations = -1
-            print line
+            logging.info(line)
 
         externalCommand = 'make lib'
-        print "Executing command : " + externalCommand
+        logging.info("Executing command : " + externalCommand)
         for line in run_command(externalCommand):
             if "error" in line:
                 result_of_operations = -1
-            print line
+            logging.info(line)
 
     ## Execute various compilations passing defines
     for elem in flags_lines:
@@ -146,39 +146,39 @@ def compile(flagsFile, toolPathsFile, verbosity, versionString):
         define_line += verbosity
 
         ## Make compilation verbose if there is a DEBUG logging level ##
-        define_line += versionString
+        define_line += "CFLAGS+=-DVER=" + versionString
 
         # Clean ...
         externalCommand = 'make clean_grbl'
         result = subprocess.Popen(externalCommand,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
-        print "Executing command : " + externalCommand
-        print result
-        if "error" in result:
+        logging.info("Executing command : " + externalCommand)
+        logging.info(result)
+        if b'error' in result:
             result_of_operations = -1
 
 
         # ... and build
         externalCommand = 'make grbl '+define_line+' '
-        print "Executing command : " + externalCommand
+        logging.info("Executing command : " + externalCommand)
         for line in run_command(externalCommand):
-            if "error" in line:
+            if b'error' in line:
                 result_of_operations = -1
-            print line
+            logging.info(str(line))
 
         build_filepath = '..' + os.sep + 'grbl_port' + os.sep + 'stm32' + os.sep + '*' + os.sep + '*' + os.sep + '*' + os.sep + 'main*.bin'
-        (old_file_names,file_name_subpaths)=get_files_by_name2(os.path.join(dirname, build_filepath))
-        logging.info(old_file_names)
-        logging.info(file_name_subpaths)
+        (old_file_names,file_name_subpaths)=get_files_by_name(os.path.join(dirname, build_filepath))
+        logging.debug(old_file_names)
+        logging.debug(file_name_subpaths)
 
         ## Copy and rename compiled file into the artifacts folder
         for ofn,fns in zip(old_file_names,file_name_subpaths):
             logging.debug(artifacts_folder)
             old_file_name = os.path.join(dirname, ofn)
-            new_file_name = os.path.join(artifacts_folder,('gocm3_' + fns + name_line + '.bin'))
+            new_file_name = os.path.join(artifacts_folder,('gocm3_' + fns + name_line +"_VER_"+ versionString +'.bin'))
             logging.info(new_file_name)
             shutil.copy(old_file_name, new_file_name)
 
-    print "Compile script execution ended."
+    logging.info("Compile script execution ended.")
 
     sys.exit(result_of_operations)
 
@@ -189,7 +189,7 @@ if __name__ == "__main__":
     parser.add_argument('-maj', '--majorVersion', type=int, default=0, help='Version MAJOR number')
     parser.add_argument('-min', '--minorVersion', type=int, default=1, help='Version minor number')
     parser.add_argument('-bui', '--buildVersion', type=int, default=0, help='Version build number')
-    parser.add_argument('-l', '--logLevel', help='Logging level.')
+    parser.add_argument('-l', '--logLevel', default='info',choices=['notset','debug','info','warning','error','critical'], help='Logging level.')
 
     args = parser.parse_args()
 
@@ -201,19 +201,15 @@ if __name__ == "__main__":
     if(args.toolPathsFile):
         toolPathsFile = args.toolPathsFile
 
-    versionString = 'VER=' + str(args.majorVersion) + '.' + str(args.minorVersion) + '.' + str(args.buildVersion)
+    versionString = str(args.majorVersion) + '.' + str(args.minorVersion) + '.' + str(args.buildVersion)
 
     verbosity = ''
 
-    # assuming loglevel is bound to the string value obtained from the
-    # command line argument. Convert to upper case to allow the user to
-    # specify --log=DEBUG or --log=debug
-    if (args.logLevel):
-        numeric_level = getattr(logging, args.logLevel.upper(), None)
-        if not isinstance(numeric_level, int):
-            raise ValueError('Invalid log level: %s' % args.logLevel)
-        logging.basicConfig(level=numeric_level)
-        if numeric_level < 20 :
-            verbosity_string = ' V=1'
+    logLevelInput = args.logLevel.upper()
+    logging.basicConfig(level=logLevelInput)
+    logging.debug("Log level set is {}".format(logLevelInput))
 
+    if (logLevelInput == "DEBUG"):
+        verbosity = ' v=1 '
+    
     compile(args.flagsFile, toolPathsFile, verbosity, versionString)
