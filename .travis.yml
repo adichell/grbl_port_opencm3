@@ -23,7 +23,7 @@ install:
 
 # Launch build and deploy
 script: 
-  - ./configurable_compile_script.py
+  - ./configurable_compile_script.py -bui $TRAVIS_BUILD_NUMBER
 
 deploy:
   provider: releases
