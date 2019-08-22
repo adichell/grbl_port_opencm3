@@ -1,5 +1,4 @@
 # GRBL port using opencm3 libraries <span style="float:right;"><a href="https://travis-ci.org/adichell/grbl_port_opencm3" style="border-bottom:none">![Build Status](https://travis-ci.org/adichell/grbl_port_opencm3.svg?branch=master)</a></span>
-For any question/discussion use this -> [![Gitter channel](https://badges.gitter.im/libopencm3/discuss.svg)](https://gitter.im/grbl_port_opencm3/Lobby)
 
 # Scope  
   
