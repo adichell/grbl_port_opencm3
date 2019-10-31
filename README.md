@@ -8,14 +8,14 @@ I used the GRBL version 0.9 as a code base since it is a stable and vastily used
 
 Since the libopencm3 are structured to support many microcontrollers, this porting may be achieved with some effort on other popular microcontrollers.  
   
-<b>NEWS:</b> Added also support for Nucleo F103RB and F303K8. I have tested many functionalities on a COREXY machine using F401RE and some functionalities with F303K8.
+<b>NEWS:</b> Also added support for Nucleo F103RB and F303K8. I have tested many functionalities on a COREXY machine using F401RE and some functionalities with F303K8.
   
 # License  
   
 Being a work derived from the GNU GPLv3 licensed GRBL project, this project uses the same license.  
 The authors and owners of every file are mentioned in the header of the file itself.  
-Please refer to GRBL repository for more information about the authors and owners of GRBL project.  
-Please refer to libopencm3 repository for more information about the authors and owners of libopencm3 project.  
+Please refer to [GRBL repository](https://github.com/grbl/grbl) for more information about the authors and owners of GRBL project.  
+Please refer to [libopencm3 repository](https://github.com/libopencm3/libopencm3) for more information about the authors and owners of libopencm3 project.  
   
 # How to compile?  
   
@@ -25,12 +25,12 @@ You should install a gcc arm toolchain and make sure it's used to compile by set
 Since the makefiles use GNU compiler tools and linux commands (e.g. "ls"), in order to compile on Windows environment something as MinGW or Cygwin should be used.  
 As an example, if you are a Windows user, you may download and install:  
   
-1. msys ([click here](http://sourceforge.net/projects/mingw/files/MSYS/Base/msys-core/msys-1.0.11/MSYS-1.0.11.exe)) or equivalent.  
+1. msys ([click here](http://sourceforge.net/projects/mingw/files/MSYS/Base/msys-core/msys-1.0.11/MSYS-1.0.11.exe)) or equivalent  
 2. Python 2.7 ([click here](http://www.python.org/ftp/python/2.7/python-2.7.msi))  
 3. arm-none-eabi/arm-elf toolchain (for example this one [here](https://launchpad.net/gcc-arm-embedded))  
   
 Set the path for the tools and the toolchain, for example:  
-set PATH=C:\msys\1.0\bin\;C:\Python27\;C:\path-to-gcc-arm-none-eabi\bin;  
+`set PATH=C:\msys\1.0\bin\;C:\Python27\;C:\path-to-gcc-arm-none-eabi\bin;`  
   
 If you are compiling under unix environment you need your PATH to point to the gcc arm toolchain Python 2.7, and you should be ready to compile.  
   
